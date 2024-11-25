@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>쿠폰 관리자 페이지</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .data-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .data-table th {
+            background-color: #f5f5f5;
+        }
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border: none;
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        .tab-button.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .status-pending {
+            color: #ffa500;
+        }
+        .status-completed {
+            color: #008000;
+        }
+        .status-rejected {
+            color: #ff0000;
+        }
+    </style>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <h1>쿠폰 관리자 페이지</h1>
+    
+    <div class="tab-container">
+        <button class="tab-button active" data-tab="coupon">쿠폰 사용 신청</button>
+        <button class="tab-button" data-tab="refund">환불 신청</button>
+    </div>
+
+    <div id="coupon-container" class="data-container">
+        <h2>쿠폰 사용 신청 내역</h2>
+        <table class="data-table" id="couponTable">
+            <thead>
+                <tr>
+                    <th>신청일시</th>
+                    <th>신청인</th>
+                    <th>전화번호</th>
+                    <th>쿠폰번호</th>
+                    <th>신청금액</th>
+                    <th>상태</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="6">데이터 로딩 중...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="refund-container" class="data-container">
+        <h2>환불 신청 내역</h2>
+        <table class="data-table" id="refundTable">
+            <thead>
+                <tr>
+                    <th>신청일시</th>
+                    <th>신청인</th>
+                    <th>이메일</th>
+                    <th>전화번호</th>
+                    <th>카드승인번호</th>
+                    
+                    <th>상태</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="7">데이터 로딩 중...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Firebase 구성
+        const firebaseConfig = {
+            apiKey: "AIzaSyAWrSUmZfofRnofVx5LfCPmPoVtTUuy3A8",
+            authDomain: "coupon-world-370d1.firebaseapp.com",
+            databaseURL: "https://coupon-world-370d1-default-rtdb.firebaseio.com",
+            projectId: "coupon-world-370d1",
+            storageBucket: "coupon-world-370d1.firebaseapp.com",
+            messagingSenderId: "631643024069",
+            appId: "1:631643024069:web:f35111184e686bc980deac",
+            measurementId: "G-1CJ2Z8D8NX"
+        };
+
+        // Firebase 초기화
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 날짜 포맷 함수
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+        }
+
+        // 상태에 따른 CSS 클래스 반환
+        function getStatusClass(status) {
+            switch(status.toLowerCase()) {
+                case 'pending': return 'status-pending';
+                case 'completed': return 'status-completed';
+                case 'rejected': return 'status-rejected';
+                default: return '';
+            }
+        }
+
+        // 쿠폰 데이터 테이블 업데이트
+        function updateCouponTable(data) {
+            const tbody = document.querySelector('#couponTable tbody');
+            if (!data) {
+                tbody.innerHTML = '<tr><td colspan="6">데이터가 없습니다.</td></tr>';
+                return;
+            }
+
+            const rows = Object.entries(data).map(([key, value]) => {
+                const statusClass = getStatusClass(value.status);
+                return `
+                    <tr>
+                        <td>${formatDate(value.timestamp)}</td>
+                        <td>${value.userName}</td>
+                        <td>${value.userPhone}</td>
+                        <td>${value.couponNumber}</td>
+                        <td>${value.amount.toLocaleString()}원</td>
+                        <td class="${statusClass}">${value.status}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = rows || '<tr><td colspan="6">데이터가 없습니다.</td></tr>';
+        }
+
+        // 환불 데이터 테이블 업데이트
+        function updateRefundTable(data) {
+            const tbody = document.querySelector('#refundTable tbody');
+            if (!data) {
+                tbody.innerHTML = '<tr><td colspan="7">데이터가 없습니다.</td></tr>';
+                return;
+            }
+
+            const rows = Object.entries(data).map(([key, value]) => {
+                const statusClass = getStatusClass(value.status);
+                
+                return `
+                    <tr>
+                        <td>${formatDate(value.timestamp)}</td>
+                        <td>${value.userName}</td>
+                        <td>${value.userEmail}</td>
+                        <td>${value.userPhone}</td>
+                        <td>${value.cardApproval}</td>
+                      
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = rows || '<tr><td colspan="5">데이터가 없습니다.</td></tr>';
+        }
+
+        // 탭 전환 기능
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // 탭 버튼 활성화 상태 변경
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                // 컨테이너 표시/숨김
+                document.getElementById('coupon-container').style.display = 
+                    this.dataset.tab === 'coupon' ? 'block' : 'none';
+                document.getElementById('refund-container').style.display = 
+                    this.dataset.tab === 'refund' ? 'block' : 'none';
+            });
+        });
+
+        // 초기 데이터 로드 및 실시간 업데이트
+        // 쿠폰 데이터
+        db.ref('applications/coupon').on('value', (snapshot) => {
+            updateCouponTable(snapshot.val());
+        }, (error) => {
+            console.error('쿠폰 데이터 로딩 에러:', error);
+            document.querySelector('#couponTable tbody').innerHTML = 
+                '<tr><td colspan="6">데이터 로딩 중 오류가 발생했습니다.</td></tr>';
+        });
+
+        // 환불 데이터
+        db.ref('applications/refund').on('value', (snapshot) => {
+            updateRefundTable(snapshot.val());
+        }, (error) => {
+            console.error('환불 데이터 로딩 에러:', error);
+            document.querySelector('#refundTable tbody').innerHTML = 
+                '<tr><td colspan="5">데이터 로딩 중 오류가 발생했습니다.</td></tr>';
+        });
+    </script>
+</body>
+</html>
