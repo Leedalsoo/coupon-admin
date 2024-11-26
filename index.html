@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 시스템</title>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f5f5f5;
+      font-size: 14px;
+    }
+
+    /* 로그인 스타일 */
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f5f5f5;
+    }
+
+    .login-form {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 0.75rem;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    /* 대시보드 스타일 */
+    .dashboard {
+      padding: 0;
+      min-height: 100vh;
+      display: none;
+    }
+
+    .dashboard-header {
+      background: #fff;
+      padding: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 100;
+      height: auto;
+    }
+
+    .menu-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 0.5rem;
+    }
+
+    .main-menu {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex: 3;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .main-menu::-webkit-scrollbar {
+      display: none;
+    }
+
+    .menu-btn {
+      padding: 0.3rem 0.5rem;
+      font-size: 0.7rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-radius: 3px;
+      margin-right: 0.3rem;
+      white-space: nowrap;
+    }
+
+    .menu-btn.active {
+      background: #007bff;
+      color: white;
+    }
+
+    .menu-btn:hover {
+      background: #f0f0f0;
+    }
+
+    .menu-btn.active:hover {
+      background: #0056b3;
+    }
+
+    /* 사용자 액션 버튼 */
+    .user-actions {
+      display: flex;
+      gap: 0.3rem;
+    }
+
+    .user-btn {
+      padding: 0.25rem 0.4rem;
+      font-size: 0.65rem;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      background: #f8f9fa;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .export-btn {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .export-btn i {
+      font-size: 0.7rem;
+    }
+
+    .logout-btn {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .change-pw-btn {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    /* 대시보드 컨텐츠 */
+    .dashboard-content {
+      margin-top: 40px;
+      height: calc(100vh - 40px);
+      overflow: hidden;
+      position: relative;
+      padding: 1rem;
+    }
+
+    .content-section {
+      display: none;
+    }
+
+    .content-section.active {
+      display: block;
+    }
+
+    /* 테이블 스타일 */
+    .table-container {
+      height: calc(100% - 50px);
+      overflow-y: auto;
+      border-radius: 8px;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .data-table th {
+      position: sticky;
+      top: 0;
+      background: #f8f9fa;
+      z-index: 10;
+      padding: 0.5rem;
+      font-size: 0.85rem;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .data-table td {
+      padding: 0.4rem 0.5rem;
+      font-size: 0.8rem;
+      border-bottom: 1px solid #eee;
+      white-space: nowrap;
+    }
+
+    .data-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    /* 상태 배지 */
+    .status-badge {
+      padding: 0.15rem 0.3rem;
+      font-size: 0.75rem;
+      display: inline-block;
+      line-height: 1;
+    }
+
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-approved {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-rejected {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    /* 액션 버튼 */
+    .action-btn {
+      padding: 0.15rem 0.3rem;
+      font-size: 0.75rem;
+      margin-right: 0.2rem;
+      line-height: 1;
+    }
+
+    .approve-btn {
+      background: #28a745;
+      color: white;
+    }
+
+    .reject-btn {
+      background: #dc3545;
+      color: white;
+    }
+
+    .reset-btn {
+      background: #6c757d;
+      color: white;
+    }
+
+    .action-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* 모달 스타일 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+
+    .modal-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .close-btn {
+      position: absolute;
+      right: 1rem;
+      top: 1rem;
+      border: none;
+      background: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      margin: 0 0 0.8rem 0;
+      padding: 0;
+      height: 30px;
+    }
+
+    .export-btn {
+      background-color: #28a745;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .export-btn i {
+      font-size: 0.9rem;
+    }
+
+    .export-btn:hover {
+      background-color: #218838;
+    }
+
+    @media (max-width: 768px) {
+      .menu-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .main-menu {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .user-actions {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .menu-btn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+      }
+
+      .user-btn {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.75rem;
+      }
+
+      .dashboard-content {
+        margin-top: 100px;
+        height: calc(100vh - 100px);
+      }
+
+      .data-table td,
+      .data-table th {
+        padding: 0.3rem 0.4rem;
+        font-size: 0.75rem;
+      }
+    }
+
+    /* 터치 디바이스 최적화 */
+    @media (hover: none) {
+
+      .menu-btn:hover,
+      .user-btn:hover {
+        opacity: 1;
+      }
+    }
+
+    /* 반응형 및 터치 관련 스타일 */
+    body {
+      touch-action: pan-x pan-y;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .dashboard-header {
+      background: #fff;
+      padding: 1rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 100;
+      height: auto;
+    }
+
+    .menu-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .main-menu {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex: 3;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .main-menu::-webkit-scrollbar {
+      display: none;
+    }
+
+    .user-actions {
+      display: flex;
+      flex-direction: row;
+      gap: 0.5rem;
+      flex: 1;
+      justify-content: flex-end;
+    }
+
+    .menu-btn {
+      padding: 0.8rem 1.2rem;
+      white-space: nowrap;
+      font-size: 1rem;
+    }
+
+    .user-btn {
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    .dashboard-content {
+      margin-top: 70px;
+      padding: 1rem;
+      max-width: 1400px;
+      margin-left: auto;
+      margin-right: auto;
+      overflow-x: hidden;
+    }
+
+    .table-container {
+      margin-top: 1rem;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .data-table thead {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f8f9fa;
+    }
+
+    /* 반응형 미디어 쿼리 */
+    @media (max-width: 768px) {
+      .menu-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .main-menu {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .user-actions {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .menu-btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      .user-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+      }
+
+      .dashboard-content {
+        margin-top: 120px;
+        padding: 0.5rem;
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 0.8rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    /* 터치 디바이스 최적화 */
+    @media (hover: none) {
+
+      .menu-btn:hover,
+      .user-btn:hover {
+        opacity: 1;
+      }
+    }
+
+    .reset-btn {
+      background: #6c757d;
+      color: white;
+    }
+
+    .action-btn {
+      margin-right: 0.3rem;
+      margin-bottom: 0.3rem;
+    }
+
+    /* 테이블 컨테이너 스크롤 설정 */
+    .dashboard-content {
+      margin-top: 60px;
+      height: calc(100vh - 60px);
+      overflow: hidden;
+      position: relative;
+      padding: 1rem;
+    }
+
+    .table-container {
+      height: calc(100% - 50px);
+      overflow-y: auto;
+      border-radius: 8px;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 테이블 레이아웃 조정 */
+    .data-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .data-table th {
+      position: sticky;
+      top: 0;
+      background: #f8f9fa;
+      z-index: 10;
+      padding: 0.5rem;
+      font-size: 0.85rem;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .data-table td {
+      padding: 0.4rem 0.5rem;
+      font-size: 0.8rem;
+      border-bottom: 1px solid #eee;
+      white-space: nowrap;
+    }
+
+    .data-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    /* 상태 배지 여백 조정 */
+    .status-badge {
+      padding: 0.15rem 0.3rem;
+      font-size: 0.75rem;
+      display: inline-block;
+      line-height: 1;
+    }
+
+    /* 액션 버튼 여백 조정 */
+    .action-btn {
+      padding: 0.15rem 0.3rem;
+      font-size: 0.75rem;
+      margin-right: 0.2rem;
+      line-height: 1;
+    }
+
+    /* 섹션 제목 여백 조정 */
+    .section-title {
+      font-size: 1.1rem;
+      margin: 0 0 0.8rem 0;
+      padding: 0;
+      height: 30px;
+    }
+
+    /* 반응형 조정 */
+    @media (max-width: 768px) {
+      .dashboard-header {
+        height: auto;
+      }
+
+      .dashboard-content {
+        margin-top: 100px;
+        height: calc(100vh - 100px);
+      }
+
+      .data-table td,
+      .data-table th {
+        padding: 0.3rem 0.4rem;
+        font-size: 0.75rem;
+      }
+    }
+
+    /* 스크롤바 스타일링 */
+    .table-container::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 3px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    /* 버튼 호버 효과 */
+    .user-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* 스크롤바 숨김 (메인 메뉴) */
+    .main-menu::-webkit-scrollbar {
+      height: 3px;
+    }
+
+    .main-menu::-webkit-scrollbar-thumb {
+      background: #ddd;
+      border-radius: 3px;
+    }
+
+    .amount-cell {
+      text-align: right;
+      font-family: 'Courier New', monospace;
+      white-space: nowrap;
+    }
+
+    /* 환불금액 요약 박스 스타일 */
+    .refund-summary-box {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 0.5rem;
+      margin: 0 1rem;
+      font-size: 0.75rem;
+      min-width: 200px;
+    }
+
+    .summary-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .summary-row:first-child {
+      margin-bottom: 0.3rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .summary-label {
+      color: #495057;
+      font-weight: 500;
+    }
+
+    .summary-value {
+      color: #007bff;
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+    }
+
+    .date-selector {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .date-selector input[type="date"] {
+      padding: 0.25rem;
+      border: 1px solid #ced4da;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      width: 120px;
+    }
+
+    /* 반응형 스타일 수정 */
+    @media (max-width: 768px) {
+      .menu-container {
+        flex-wrap: wrap;
+      }
+      
+      .refund-summary-box {
+        order: 2;
+        width: 100%;
+        margin: 0.5rem 0;
+      }
+      
+      .user-actions {
+        order: 3;
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+
+    /* 삭제 버튼 스타일 */
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+      margin-left: 0.3rem;
+    }
+
+    .delete-btn:hover {
+      background: #c82333;
+    }
+
+    /* 액션 버튼 컨테이너 */
+    .action-buttons {
+      display: flex;
+      gap: 0.3rem;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    /* 액션 버튼 공통 스타일 */
+    .action-btn {
+      padding: 0.3rem 0.6rem;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    /* 승인 버튼 */
+    .approve-btn {
+      background: #28a745;
+      color: white;
+    }
+
+    /* 반려 버튼 */
+    .reject-btn {
+      background: #dc3545;
+      color: white;
+    }
+
+    /* 삭제 버튼 */
+    .delete-btn {
+      background: #6c757d;
+      color: white;
+      padding: 0.3rem 0.5rem;
+    }
+
+    /* 버튼 호버 효과 */
+    .action-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* 아이콘 스타일 */
+    .action-btn i {
+      font-size: 0.8rem;
+    }
+
+    /* 헤더 부분에 다음 CSS 스타일 추가 */
+    .action-buttons {
+      display: flex;
+      gap: 0.3rem;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .action-btn {
+      padding: 0.3rem 0.6rem;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .approve-btn {
+      background: #28a745;
+      color: white;
+    }
+
+    .reject-btn {
+      background: #dc3545;
+      color: white;
+    }
+
+    .delete-btn {
+      background: #6c757d;
+      color: white;
+      padding: 0.3rem;
+    }
+
+    .action-btn:hover {
+      opacity: 0.8;
+    }
+
+    /* 상태 뱃지 스타일 */
+    .status-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .status-pending {
+      background: #ffc107;
+      color: #000;
+    }
+
+    .status-approved {
+      background: #28a745;
+      color: white;
+    }
+
+    .status-rejected {
+      background: #dc3545;
+      color: white;
+    }
+
+    /* 테이블 셀 스타일 */
+    .data-table td {
+      padding: 0.5rem;
+      vertical-align: middle;
+    }
+
+    .data-table td:last-child {
+      min-width: 120px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 로그인 섹션 -->
+  <div id="loginSection" class="login-container">
+    <form id="loginForm" class="login-form">
+      <h2 style="margin-bottom: 1.5rem; text-align: center;">관리자 로그인</h2>
+      <div class="form-group">
+        <label for="adminId">관리자 ID</label>
+        <input type="text" id="adminId" class="form-input" required>
+      </div>
+      <div class="form-group">
+        <label for="password">비밀번호</label>
+        <input type="password" id="password" class="form-input" required>
+      </div>
+      <button type="submit" class="login-btn">로그인</button>
+    </form>
+  </div>
+
+  <!-- 메인 대시보드 섹션 -->
+  <div id="mainSection" class="dashboard">
+    <header class="dashboard-header">
+      <div class="menu-container">
+        <div class="main-menu">
+          <button class="menu-btn active" data-section="coupon">쿠폰사용신청관리</button>
+          <button class="menu-btn" data-section="refund">환불신청관리</button>
+          <button class="menu-btn" data-section="inquiry">문의사항관리</button>
+        </div>
+        
+        <!-- 환불금액 요약 박스 추가 -->
+        <div class="refund-summary-box">
+          <div class="summary-row">
+            <span class="summary-label">금일 실시간 환불신청 총액:</span>
+            <span id="todayTotal" class="summary-value">0원</span>
+          </div>
+          <div class="summary-row">
+            <div class="date-selector">
+              <input type="date" id="refundDate" onchange="updateRefundSummary()">
+              <span id="selectedDateTotal" class="summary-value">0원</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="user-actions">
+          <button class="user-btn export-btn" onclick="exportToExcel()">
+            <i class="fas fa-file-excel"></i> 엑셀저장
+          </button>
+          <button class="user-btn logout-btn" onclick="logout()">로그아웃</button>
+          <button class="user-btn change-pw-btn" onclick="showChangePasswordModal()">비밀번호 변경</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard-content">
+      <!-- 쿠폰사용신청관리 섹션 -->
+      <section id="coupon" class="content-section active">
+        <h2 class="section-title">쿠폰사용신청관리</h2>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>신청일시</th>
+                <th>신청인</th>
+                <th>전화번호</th>
+                <th>쿠폰번호</th>
+                <th>사용금액</th>
+                <th>처리상태</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="couponTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 환불신청관리 섹션 -->
+      <section id="refund" class="content-section">
+        <h2 class="section-title">환불신청관리</h2>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>신청일시</th>
+                <th>신청인</th>
+                <th>이메일</th>
+                <th>전화번호</th>
+                <th>승인번호</th>
+                <th>환불금액</th>
+                <th>환불계좌</th>
+                <th>처리상태</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="refundTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 문의사항리 섹션 -->
+      <section id="inquiry" class="content-section">
+        <h2 class="section-title">문의사항관리</h2>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>등록일시</th>
+                <th>작성자</th>
+                <th>이메일</th>
+                <th>제목</th>
+                <th>처리상태</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="inquiryTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 비밀번호 변경 모달 -->
+  <div id="passwordModal" class="modal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="hideChangePasswordModal()">&times;</button>
+      <h2 style="margin-bottom: 1.5rem;">비밀번호 변경</h2>
+      <form id="changePasswordForm">
+        <div class="form-group">
+          <label for="currentPassword">현재 비밀번호</label>
+          <input type="password" id="currentPassword" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label for="newPassword">새 비밀번호</label>
+          <input type="password" id="newPassword" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">새 비밀번호 확인</label>
+          <input type="password" id="confirmPassword" class="form-input" required>
+        </div>
+        <button type="submit" class="login-btn">변경하기</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Firebase 초기화
+    const firebaseConfig = {
+      apiKey: "AIzaSyAWrSUmZfofRnofVx5LfCPmPoVtTUuy3A8",
+      authDomain: "coupon-world-370d1.firebaseapp.com",
+      databaseURL: "https://coupon-world-370d1-default-rtdb.firebaseio.com",
+      projectId: "coupon-world-370d1",
+      storageBucket: "coupon-world-370d1.firebasestorage.app",
+      messagingSenderId: "631643024069",
+      appId: "1:631643024069:web:f35111184e686bc980deac",
+      measurementId: "G-1CJ2Z8D8NX"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // 관리자 계정 정보
+    const adminCredentials = {
+      'mainadmin': 'vlfl940325',
+      'stepadmin': 'step1111',
+      'sales': 'sales1111'
+    };
+
+    // 유틸리티 함수
+    const utils = {
+      formatDate(timestamp) {
+        const date = new Date(timestamp);
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+      },
+      getStatusText(status) {
+        return {
+          pending: '대기중',
+          approved: '승인됨',
+          rejected: '반려됨'
+        }[status] || '알 수 없음';
+      }
+    };
+
+    // 로그인 처리
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const adminId = document.getElementById('adminId').value;
+      const password = document.getElementById('password').value;
+
+      if (adminCredentials[adminId] === password) {
+        sessionStorage.setItem('adminId', adminId);
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('mainSection').style.display = 'block';
+        loadSectionData('coupon');
+        setupRealtimeUpdates();
+      } else {
+        alert('아이디 또는 비밀번호가 올바르지 않습니다.');
+      }
+    });
+
+    // 데이터 로드 및 테이블 업데이트
+    function updateTable(type, data) {
+      const tableBody = document.getElementById(`${type}TableBody`);
+      if (!tableBody) return;
+
+      if (!data || Object.keys(data).length === 0) {
+        const colSpan = type === 'refund' ? 9 : (type === 'coupon' ? 7 : 6);
+        tableBody.innerHTML = `<tr><td colspan="${colSpan}" class="no-data">데이터가 없습니다.</td></tr>`;
+        return;
+      }
+
+      const rows = Object.entries(data)
+        .sort((a, b) => new Date(b[1].timestamp) - new Date(a[1].timestamp))
+        .map(([key, item]) => {
+          const statusBadge = `<span class="status-badge status-${item.status}">${utils.getStatusText(item.status)}</span>`;
+          
+          // mainadmin일 경우에만 삭제 버튼 포함
+          const isMainAdmin = sessionStorage.getItem('adminId') === 'mainadmin';
+          const deleteBtn = isMainAdmin ? 
+            `<button class="action-btn delete-btn" onclick="deleteData('${key}', '${type}')">
+                <i class="fas fa-trash"></i>
+            </button>` : '';
+
+          const actionButtons = `
+                        <div class="action-buttons">
+                            <button class="action-btn approve-btn" onclick="updateStatus('${key}', '${type}', 'approved')">승인</button>
+                            <button class="action-btn reject-btn" onclick="updateStatus('${key}', '${type}', 'rejected')">반려</button>
+                            ${deleteBtn}
+                        </div>
+                    `;
+
+          if (type === 'refund') {
+            // 데이터 존재 여부 확인 및 기본값 설정
+            const bankInfo = item.bankInfo || {};
+            const refundAmount = item.refundAmount || 0;
+
+            return `
+                            <tr>
+                                <td>${utils.formatDate(item.timestamp)}</td>
+                                <td>${item.userName || ''}</td>
+                                <td>${item.userEmail || ''}</td>
+                                <td>${item.userPhone || ''}</td>
+                                <td>${item.cardApproval || ''}</td>
+                                <td class="amount-cell">${refundAmount.toLocaleString()}원</td>
+                                <td>${bankInfo.bankName || ''} ${bankInfo.accountNumber || ''}</td>
+                                <td>${statusBadge}</td>
+                                <td>${actionButtons}</td>
+                            </tr>
+                        `;
+          } else if (type === 'coupon') {
+            return `
+                            <tr>
+                                <td>${utils.formatDate(item.timestamp)}</td>
+                                <td>${item.userName || ''}</td>
+                                <td>${item.userPhone || ''}</td>
+                                <td>${item.couponNumber || ''}</td>
+                                <td class="amount-cell">${(item.amount || 0).toLocaleString()}원</td>
+                                <td>${statusBadge}</td>
+                                <td>${actionButtons}</td>
+                            </tr>
+                        `;
+          }
+          return '';
+        }).join('');
+
+      tableBody.innerHTML = rows;
+    }
+
+    // 상태 업데이트 함수
+    async function updateStatus(key, type, newStatus) {
+      const currentAdmin = sessionStorage.getItem('adminId');
+
+      // 권한 체크
+      if (currentAdmin !== 'mainadmin' && currentAdmin !== 'admin') {
+        alert('처리 권한이 없습니다.');
+        return;
+      }
+
+      try {
+        await db.ref(`applications/${type}/${key}`).update({
+          status: newStatus,
+          processedAt: new Date().toISOString(),
+          processedBy: currentAdmin
+        });
+
+        const actionText = newStatus === 'pending' ? '초기화' :
+          newStatus === 'approved' ? '승인' : '반려';
+        alert(`${type === 'coupon' ? '쿠폰' : '환불'} 신청이 ${actionText}되었습니다.`);
+      } catch (error) {
+        console.error('상태 업데이트 실패:', error);
+        alert('처리 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 섹션 데이터 로드
+    function loadSectionData(type) {
+      db.ref(`applications/${type}`).once('value')
+        .then(snapshot => {
+          updateTable(type, snapshot.val());
+        })
+        .catch(error => {
+          console.error('데이터 로드 실패:', error);
+          alert('데이터 로드 중 오류가 발생했습니다.');
+        });
+    }
+
+    // 실시간 업데이트 설정
+    function setupRealtimeUpdates() {
+      ['coupon', 'refund', 'inquiry'].forEach(type => {
+        db.ref(`applications/${type}`).on('value', snapshot => {
+          if (document.getElementById(type).classList.contains('active')) {
+            updateTable(type, snapshot.val());
+          }
+        });
+      });
+    }
+
+    // 로그아웃 처리
+    function logout() {
+      if (confirm('로그아웃 하시겠니까?')) {
+        sessionStorage.removeItem('adminId');
+        window.location.reload();
+      }
+    }
+
+    // 비밀번호 변경 모달 제어
+    function showChangePasswordModal() {
+      document.getElementById('passwordModal').style.display = 'block';
+    }
+
+    function hideChangePasswordModal() {
+      document.getElementById('passwordModal').style.display = 'none';
+      document.getElementById('changePasswordForm').reset();
+    }
+
+    // 비밀번호 변경 처리
+    document.getElementById('changePasswordForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const adminId = sessionStorage.getItem('adminId');
+
+      if (adminCredentials[adminId] !== currentPassword) {
+        alert('현재 비밀번호가 올바르지 않습니다.');
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        alert('새 비밀번호가 일치하지 않습니다.');
+        return;
+      }
+
+      adminCredentials[adminId] = newPassword;
+      alert('비밀번호가 변경되었습니다.');
+      hideChangePasswordModal();
+    });
+
+    // 메뉴 전환 이벤트 설정
+    document.querySelectorAll('.menu-btn').forEach(button => {
+      button.addEventListener('click', function () {
+        const sectionId = this.dataset.section;
+
+        document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+
+        document.querySelectorAll('.content-section').forEach(section => {
+          section.classList.remove('active');
+        });
+        document.getElementById(sectionId).classList.add('active');
+
+        loadSectionData(sectionId);
+      });
+    });
+
+    // 초기화
+    document.addEventListener('DOMContentLoaded', function () {
+      const adminId = sessionStorage.getItem('adminId');
+      if (adminId) {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('mainSection').style.display = 'block';
+        loadSectionData('coupon');
+        setupRealtimeUpdates();
+      } else {
+        document.getElementById('loginSection').style.display = 'flex';
+        document.getElementById('mainSection').style.display = 'none';
+      }
+    });
+
+    // 세션 만료 시간 설정
+    const SESSION_TIMEOUT = 3600000; // 1시간
+    sessionStorage.setItem('loginTime', Date.now());
+
+    // 주기적으 세션 체크
+    setInterval(() => {
+      const loginTime = sessionStorage.getItem('loginTime');
+      if (Date.now() - loginTime > SESSION_TIMEOUT) {
+        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+        logout();
+      }
+    }, 60000); // 1분마다 체크
+
+    // 엑셀 내보내기 함수
+    function exportToExcel() {
+      const currentSection = document.querySelector('.content-section.active');
+      const type = currentSection.id;
+      const timestamp = new Date().toISOString().slice(0, 10);
+
+      // 이블 데이터 가져오기
+      const table = currentSection.querySelector('.data-table');
+      const ws = XLSX.utils.table_to_sheet(table);
+
+      // 열 너비 설정
+      const colWidths = [];
+      table.querySelectorAll('tr:first-child td, tr:first-child th').forEach(() => {
+        colWidths.push({ wch: 15 }); // 기본  너비
+      });
+      ws['!cols'] = colWidths;
+
+      // 워크북 생성
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+      // 파일명 설정
+      let fileName = '';
+      switch (type) {
+        case 'coupon':
+          fileName = `쿠폰사용신청_${timestamp}.xlsx`;
+          break;
+        case 'refund':
+          fileName = `환불신청_${timestamp}.xlsx`;
+          break;
+        case 'inquiry':
+          fileName = `문의사항_${timestamp}.xlsx`;
+          break;
+      }
+
+      // 엑셀 파일 저장
+      try {
+        XLSX.writeFile(wb, fileName);
+      } catch (error) {
+        console.error('엑셀 파일 생성 중 오류:', error);
+        alert('엑셀 파일 생성 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 날짜 포맷 함수 (엑셀용)
+    function formatDateForExcel(timestamp) {
+      const date = new Date(timestamp);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    }
+
+    // 테이블 업데이트 수 수정 (기존 updateTable 함수에 추가)
+    function updateTable(type, data) {
+      const tableBody = document.getElementById(`${type}TableBody`);
+      if (!tableBody) return;
+
+      if (!data || Object.keys(data).length === 0) {
+        const colSpan = type === 'refund' ? 9 : (type === 'coupon' ? 7 : 6);
+        tableBody.innerHTML = `<tr><td colspan="${colSpan}" class="no-data">데이터가 없습니다.</td></tr>`;
+        return;
+      }
+
+      const rows = Object.entries(data)
+        .sort((a, b) => new Date(b[1].timestamp) - new Date(a[1].timestamp))
+        .map(([key, item]) => {
+          const statusBadge = `<span class="status-badge status-${item.status}">${utils.getStatusText(item.status)}</span>`;
+          const actionButtons = `
+                        <div class="action-buttons">
+                            <button class="action-btn approve-btn" onclick="updateStatus('${key}', '${type}', 'approved')">승인</button>
+                            <button class="action-btn reject-btn" onclick="updateStatus('${key}', '${type}', 'rejected')">반려</button>
+                        </div>
+                    `;
+
+          if (type === 'refund') {
+            // 데이터 존재 여부 확인 및 기본값 설정
+            const bankInfo = item.bankInfo || {};
+            const refundAmount = item.refundAmount || 0;
+
+            return `
+                            <tr>
+                                <td>${utils.formatDate(item.timestamp)}</td>
+                                <td>${item.userName || ''}</td>
+                                <td>${item.userEmail || ''}</td>
+                                <td>${item.userPhone || ''}</td>
+                                <td>${item.cardApproval || ''}</td>
+                                <td class="amount-cell">${refundAmount.toLocaleString()}원</td>
+                                <td>${bankInfo.bankName || ''} ${bankInfo.accountNumber || ''}</td>
+                                <td>${statusBadge}</td>
+                                <td>${actionButtons}</td>
+                            </tr>
+                        `;
+          } else if (type === 'coupon') {
+            return `
+                            <tr>
+                                <td>${utils.formatDate(item.timestamp)}</td>
+                                <td>${item.userName || ''}</td>
+                                <td>${item.userPhone || ''}</td>
+                                <td>${item.couponNumber || ''}</td>
+                                <td class="amount-cell">${(item.amount || 0).toLocaleString()}원</td>
+                                <td>${statusBadge}</td>
+                                <td>${actionButtons}</td>
+                            </tr>
+                        `;
+          }
+          return '';
+        }).join('');
+
+      tableBody.innerHTML = rows;
+    }
+
+    // Firebase 데이터 연동
+    function initializeData() {
+      // 실시간 데이터베이스 참조
+      const refundRef = firebase.database().ref('applications/refund');
+      const couponRef = firebase.database().ref('applications/coupon');
+
+      // 환불신청 데이터 감시
+      refundRef.on('value', (snapshot) => {
+        console.log('환불신청 데이터:', snapshot.val()); // 디버깅용
+        updateTable('refund', snapshot.val());
+      }, (error) => {
+        console.error('환불신청 데이터 로드 중 오류:', error);
+      });
+
+      // 쿠폰사용신청 데이터 감시
+      couponRef.on('value', (snapshot) => {
+        updateTable('coupon', snapshot.val());
+      }, (error) => {
+        console.error('쿠폰사용신청 데이터 로드 중 오류:', error);
+      });
+    }
+
+    // 유틸리티 함수들
+    function getStatusText(status) {
+      const statusMap = {
+        'pending': '대기중',
+        'approved': '승인',
+        'rejected': '반려'
+      };
+      return statusMap[status] || status;
+    }
+
+    function formatDate(timestamp) {
+      if (!timestamp) return '';
+      const date = new Date(timestamp);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    }
+
+    // 페이지 로드 시 초기화
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeData();
+    });
+
+    // 핀치 줌 및 드래그 기능 설정
+    document.addEventListener('DOMContentLoaded', function () {
+      // 테이블 컨테이너 터치 이벤트 설정
+      const tableContainers = document.querySelectorAll('.table-container');
+
+      tableContainers.forEach(container => {
+        let startX;
+        let scrollLeft;
+
+        container.addEventListener('touchstart', function (e) {
+          startX = e.touches[0].pageX - container.offsetLeft;
+          scrollLeft = container.scrollLeft;
+        });
+
+        container.addEventListener('touchmove', function (e) {
+          if (!startX) return;
+          const x = e.touches[0].pageX - container.offsetLeft;
+          const walk = (x - startX) * 2;
+          container.scrollLeft = scrollLeft - walk;
+        });
+      });
+
+      // 테이블 헤더 고정 및 스크롤 동기화
+      const tables = document.querySelectorAll('.data-table');
+      tables.forEach(table => {
+        const headerHeight = table.querySelector('thead').offsetHeight;
+        table.style.marginTop = `-${headerHeight}px`;
+        table.querySelector('tbody').style.marginTop = `${headerHeight}px`;
+      });
+    });
+
+    // 화면 크기 변경 시 레이아웃 조정
+    window.addEventListener('resize', function () {
+      const header = document.querySelector('.dashboard-header');
+      const content = document.querySelector('.dashboard-content');
+      content.style.marginTop = `${header.offsetHeight + 10}px`;
+    });
+
+    // 터치 이벤트 최적화
+    document.addEventListener('gesturestart', function (e) {
+      e.preventDefault(); // 기본 제스처 동작 방지
+    });
+
+    // 환불금액 요약 업데이트 함수
+    function updateRefundSummary() {
+      const selectedDate = document.getElementById('refundDate').value;
+      const today = new Date().toISOString().split('T')[0];
+
+      // Firebase에서 환불 데이터 조회
+      db.ref('applications/refund').once('value')
+        .then(snapshot => {
+          const refundData = snapshot.val() || {};
+          let selectedDateTotal = 0;
+          let todayTotal = 0;
+
+          Object.values(refundData).forEach(item => {
+            const itemDate = new Date(item.timestamp).toISOString().split('T')[0];
+            const amount = parseInt(item.refundAmount) || 0;
+
+            // 선택된 날짜의 합계 계산
+            if (itemDate === selectedDate) {
+              selectedDateTotal += amount;
+            }
+
+            // 오늘 날짜의 합계 계산
+            if (itemDate === today) {
+              todayTotal += amount;
+            }
+          });
+
+          // 결과 표시
+          document.getElementById('selectedDateTotal').textContent =
+            selectedDateTotal.toLocaleString() + '원';
+          document.getElementById('todayTotal').textContent =
+            todayTotal.toLocaleString() + '원';
+        });
+    }
+
+    // 페이지 로드 시 초기화
+    document.addEventListener('DOMContentLoaded', () => {
+      // 날짜 입력 필드 초기값 설정
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('refundDate').value = today;
+      
+      // 초기 환불금액 요약 업데이트
+      updateRefundSummary();
+      
+      // 실시간 데이터 감시 설정
+      initializeData();
+    });
+
+    // 실시간 데이터 업데이 시 요약 정보도 갱신
+    function initializeData() {
+      // 기존 코드...
+
+      refundRef.on('value', (snapshot) => {
+        updateTable('refund', snapshot.val());
+        updateRefundSummary(); // 요약 정보 갱신 추가
+      });
+    }
+
+    // 데이터 삭제 함수 추가
+    async function deleteData(key, type) {
+      // mainadmin 권한 체크
+      if (sessionStorage.getItem('adminId') !== 'mainadmin') {
+        alert('삭제 권한이 없습니다.');
+        return;
+      }
+
+      // 삭제 확인
+      const confirmMessage = {
+        'coupon': '쿠폰사용신청',
+        'refund': '환불신청',
+        'inquiry': '문의사항'
+      };
+      
+      if (!confirm(`선택한 ${confirmMessage[type]} 데이터를 삭제하시겠습니까?\n삭제 데이터는 복구할  없습니다.`)) {
+        return;
+      }
+
+      try {
+        // Firebase에서 데이터 삭제
+        await db.ref(`applications/${type}/${key}`).remove();
+        
+        // 삭제 로그 기록 (선택사항)
+        await db.ref('deleteLogs').push({
+          type: type,
+          dataKey: key,
+          deletedBy: sessionStorage.getItem('adminId'),
+          deletedAt: new Date().toISOString()
+        });
+
+        alert('데이터가 삭제되었습니다.');
+        
+        // 환불신청 데이터인 경우 요약 정보 업데이
+        if (type === 'refund') {
+          updateRefundSummary();
+        }
+      } catch (error) {
+        console.error('데이터 삭제 중 오류:', error);
+        alert('데이터 삭제 중 오류가 발생했습니다.');
+      }
+    }
+  </script>
+</body>
+
+</html>
