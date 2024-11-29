@@ -176,11 +176,11 @@
 
     /* 대시보드 컨텐츠 */
     .dashboard-content {
-      margin-top: 40px;
-      height: calc(100vh - 40px);
+      margin-top: 70px;
+      padding: 1.5rem;
+      height: calc(100vh - 70px);
       overflow: hidden;
       position: relative;
-      padding: 1rem;
     }
 
     .content-section {
@@ -193,7 +193,8 @@
 
     /* 테이블 스타일 */
     .table-container {
-      height: calc(100% - 50px);
+      margin-top: 1.5rem;
+      height: calc(100% - 100px);
       overflow-y: auto;
       border-radius: 8px;
       background: white;
@@ -313,7 +314,7 @@
 
     .section-title {
       font-size: 1.1rem;
-      margin: 0 0 0.8rem 0;
+      margin: 0 0 1.2rem 0;
       padding: 0;
       height: 30px;
     }
@@ -361,8 +362,14 @@
       }
 
       .dashboard-content {
-        margin-top: 100px;
-        height: calc(100vh - 100px);
+        margin-top: 120px;
+        height: calc(100vh - 120px);
+        padding: 1rem;
+      }
+
+      .table-container {
+        margin-top: 1rem;
+        height: calc(100% - 100px);
       }
 
       .data-table td,
@@ -542,7 +549,7 @@
     }
 
     .table-container {
-      height: calc(100% - 50px);
+      height: calc(100% - 100px);
       overflow-y: auto;
       border-radius: 8px;
       background: white;
@@ -596,7 +603,7 @@
     /* 섹션 제목 여백 조정 */
     .section-title {
       font-size: 1.1rem;
-      margin: 0 0 0.8rem 0;
+      margin: 0 0 1.2rem 0;
       padding: 0;
       height: 30px;
     }
@@ -858,6 +865,23 @@
     .data-table td:last-child {
       min-width: 120px;
     }
+
+    /* 송금완료 버튼 스타일 */
+    .complete-btn {
+      background: #17a2b8;
+      color: white;
+    }
+    /* 환불처리완료 상태 배지 스타일 */
+    .status-completed {
+      background: #17a2b8;
+      color: white;
+    }
+
+    /* 취소 상태 배지 스타일 추가 */
+    .status-cancelled {
+      background: #6c757d;
+      color: white;
+    }
   </style>
 </head>
 
@@ -936,11 +960,12 @@
 
       <!-- 환불신청관리 섹션 -->
       <section id="refund" class="content-section">
-        <h2 class="section-title">환불신청관리</h2>
+        <h2 class="section-title">불신청관리</h2>
         <div class="table-container">
           <table class="data-table">
             <thead>
               <tr>
+                <th>환불신청번호</th>
                 <th>신청일시</th>
                 <th>신청인</th>
                 <th>이메일</th>
@@ -1035,7 +1060,9 @@
         return {
           pending: '대기중',
           approved: '승인됨',
-          rejected: '반려됨'
+          rejected: '반려됨',
+          completed: '환불처리완료',
+          cancelled: '취소'
         }[status] || '알 수 없음';
       }
     };
@@ -1050,8 +1077,13 @@
         sessionStorage.setItem('adminId', adminId);
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('mainSection').style.display = 'block';
-        loadSectionData('coupon');
-        setupRealtimeUpdates();
+        
+        // 로그인 성공 후 레이아웃 초기화
+        setTimeout(() => {
+          loadSectionData('coupon');
+          setupRealtimeUpdates();
+          adjustLayout();
+        }, 100);
       } else {
         alert('아이디 또는 비밀번호가 올바르지 않습니다.');
       }
@@ -1063,7 +1095,7 @@
       if (!tableBody) return;
 
       if (!data || Object.keys(data).length === 0) {
-        const colSpan = type === 'refund' ? 9 : (type === 'coupon' ? 7 : 6);
+        const colSpan = type === 'refund' ? 10 : (type === 'coupon' ? 7 : 6);
         tableBody.innerHTML = `<tr><td colspan="${colSpan}" class="no-data">데이터가 없습니다.</td></tr>`;
         return;
       }
@@ -1072,52 +1104,60 @@
         .sort((a, b) => new Date(b[1].timestamp) - new Date(a[1].timestamp))
         .map(([key, item]) => {
           const statusBadge = `<span class="status-badge status-${item.status}">${utils.getStatusText(item.status)}</span>`;
+          let actionButtons = '';
           
-          // mainadmin일 경우에만 삭제 버튼 포함
-          const isMainAdmin = sessionStorage.getItem('adminId') === 'mainadmin';
-          const deleteBtn = isMainAdmin ? 
-            `<button class="action-btn delete-btn" onclick="deleteData('${key}', '${type}')">
-                <i class="fas fa-trash"></i>
-            </button>` : '';
-
-          const actionButtons = `
-                        <div class="action-buttons">
-                            <button class="action-btn approve-btn" onclick="updateStatus('${key}', '${type}', 'approved')">승인</button>
-                            <button class="action-btn reject-btn" onclick="updateStatus('${key}', '${type}', 'rejected')">반려</button>
-                            ${deleteBtn}
-                        </div>
-                    `;
-
+          if (type === 'refund') {
+            actionButtons = `
+              <div class="action-buttons">
+                <button class="action-btn approve-btn" onclick="updateStatus('${key}', '${type}', 'approved')">승인</button>
+                <button class="action-btn reject-btn" onclick="updateStatus('${key}', '${type}', 'rejected')">반려</button>
+                <button class="action-btn complete-btn" onclick="updateStatus('${key}', '${type}', 'completed')">송금완료</button>
+              </div>
+            `;
+          } else {
+            actionButtons = `
+              <div class="action-buttons">
+                <button class="action-btn approve-btn" onclick="updateStatus('${key}', '${type}', 'approved')">승인</button>
+                <button class="action-btn reject-btn" onclick="updateStatus('${key}', '${type}', 'rejected')">반려</button>
+              </div>
+            `;
+          }
+          
           if (type === 'refund') {
             // 데이터 존재 여부 확인 및 기본값 설정
             const bankInfo = item.bankInfo || {};
             const refundAmount = item.refundAmount || 0;
-
+            
+            // 상태에 따른 배지 클래스 설정
+            const statusClass = item.status === 'cancelled' ? 'cancelled' : item.status;
+            const statusBadge = `<span class="status-badge status-${statusClass}">${getStatusText(item.status)}</span>`;
+            
             return `
-                            <tr>
-                                <td>${utils.formatDate(item.timestamp)}</td>
-                                <td>${item.userName || ''}</td>
-                                <td>${item.userEmail || ''}</td>
-                                <td>${item.userPhone || ''}</td>
-                                <td>${item.cardApproval || ''}</td>
-                                <td class="amount-cell">${refundAmount.toLocaleString()}원</td>
-                                <td>${bankInfo.bankName || ''} ${bankInfo.accountNumber || ''}</td>
-                                <td>${statusBadge}</td>
-                                <td>${actionButtons}</td>
-                            </tr>
-                        `;
+              <tr>
+                <td>${item.applicationNumber || '-'}</td>
+                <td>${utils.formatDate(item.timestamp)}</td>
+                <td>${item.userName || ''}</td>
+                <td>${item.userEmail || ''}</td>
+                <td>${item.userPhone || ''}</td>
+                <td>${item.cardApproval || ''}</td>
+                <td class="amount-cell">${refundAmount.toLocaleString()}원</td>
+                <td>${bankInfo.bankName || ''} ${bankInfo.accountNumber || ''}</td>
+                <td>${statusBadge}</td>
+                <td>${actionButtons}</td>
+              </tr>
+            `;
           } else if (type === 'coupon') {
             return `
-                            <tr>
-                                <td>${utils.formatDate(item.timestamp)}</td>
-                                <td>${item.userName || ''}</td>
-                                <td>${item.userPhone || ''}</td>
-                                <td>${item.couponNumber || ''}</td>
-                                <td class="amount-cell">${(item.amount || 0).toLocaleString()}원</td>
-                                <td>${statusBadge}</td>
-                                <td>${actionButtons}</td>
-                            </tr>
-                        `;
+              <tr>
+                <td>${utils.formatDate(item.timestamp)}</td>
+                <td>${item.userName || ''}</td>
+                <td>${item.userPhone || ''}</td>
+                <td>${item.couponNumber || ''}</td>
+                <td class="amount-cell">${(item.amount || 0).toLocaleString()}원</td>
+                <td>${statusBadge}</td>
+                <td>${actionButtons}</td>
+              </tr>
+            `;
           }
           return '';
         }).join('');
@@ -1129,7 +1169,7 @@
     async function updateStatus(key, type, newStatus) {
       const currentAdmin = sessionStorage.getItem('adminId');
 
-      // 권한 체크
+      // 권한 크
       if (currentAdmin !== 'mainadmin' && currentAdmin !== 'admin') {
         alert('처리 권한이 없습니다.');
         return;
@@ -1143,8 +1183,14 @@
         });
 
         const actionText = newStatus === 'pending' ? '초기화' :
-          newStatus === 'approved' ? '승인' : '반려';
-        alert(`${type === 'coupon' ? '쿠폰' : '환불'} 신청이 ${actionText}되었습니다.`);
+          newStatus === 'approved' ? '승인' :
+          newStatus === 'completed' ? '완료' : '반려';
+
+        const message = newStatus === 'completed' ? 
+                        '환불이 완료되었습니다.' :
+                        `${type === 'coupon' ? '쿠폰' : '환불'} 신청이 ${actionText}되었습니다.`;
+
+        alert(message);
       } catch (error) {
         console.error('상태 업데이트 실패:', error);
         alert('처리 중 오류가 발생했습니다.');
@@ -1238,8 +1284,13 @@
       if (adminId) {
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('mainSection').style.display = 'block';
-        loadSectionData('coupon');
-        setupRealtimeUpdates();
+        
+        // 세션 유지 상태에서 페이지 로드 시 레이아웃 초기화
+        setTimeout(() => {
+          loadSectionData('coupon');
+          setupRealtimeUpdates();
+          adjustLayout();
+        }, 100);
       } else {
         document.getElementById('loginSection').style.display = 'flex';
         document.getElementById('mainSection').style.display = 'none';
@@ -1315,7 +1366,7 @@
       if (!tableBody) return;
 
       if (!data || Object.keys(data).length === 0) {
-        const colSpan = type === 'refund' ? 9 : (type === 'coupon' ? 7 : 6);
+        const colSpan = type === 'refund' ? 10 : (type === 'coupon' ? 7 : 6);
         tableBody.innerHTML = `<tr><td colspan="${colSpan}" class="no-data">데이터가 없습니다.</td></tr>`;
         return;
       }
@@ -1324,43 +1375,60 @@
         .sort((a, b) => new Date(b[1].timestamp) - new Date(a[1].timestamp))
         .map(([key, item]) => {
           const statusBadge = `<span class="status-badge status-${item.status}">${utils.getStatusText(item.status)}</span>`;
-          const actionButtons = `
-                        <div class="action-buttons">
-                            <button class="action-btn approve-btn" onclick="updateStatus('${key}', '${type}', 'approved')">승인</button>
-                            <button class="action-btn reject-btn" onclick="updateStatus('${key}', '${type}', 'rejected')">반려</button>
-                        </div>
-                    `;
-
+          let actionButtons = '';
+          
+          if (type === 'refund') {
+            actionButtons = `
+              <div class="action-buttons">
+                <button class="action-btn approve-btn" onclick="updateStatus('${key}', '${type}', 'approved')">승인</button>
+                <button class="action-btn reject-btn" onclick="updateStatus('${key}', '${type}', 'rejected')">반려</button>
+                <button class="action-btn complete-btn" onclick="updateStatus('${key}', '${type}', 'completed')">송금완료</button>
+              </div>
+            `;
+          } else {
+            actionButtons = `
+              <div class="action-buttons">
+                <button class="action-btn approve-btn" onclick="updateStatus('${key}', '${type}', 'approved')">승인</button>
+                <button class="action-btn reject-btn" onclick="updateStatus('${key}', '${type}', 'rejected')">반려</button>
+              </div>
+            `;
+          }
+          
           if (type === 'refund') {
             // 데이터 존재 여부 확인 및 기본값 설정
             const bankInfo = item.bankInfo || {};
             const refundAmount = item.refundAmount || 0;
-
+            
+            // 상태에 따른 배지 클래스 설정
+            const statusClass = item.status === 'cancelled' ? 'cancelled' : item.status;
+            const statusBadge = `<span class="status-badge status-${statusClass}">${getStatusText(item.status)}</span>`;
+            
             return `
-                            <tr>
-                                <td>${utils.formatDate(item.timestamp)}</td>
-                                <td>${item.userName || ''}</td>
-                                <td>${item.userEmail || ''}</td>
-                                <td>${item.userPhone || ''}</td>
-                                <td>${item.cardApproval || ''}</td>
-                                <td class="amount-cell">${refundAmount.toLocaleString()}원</td>
-                                <td>${bankInfo.bankName || ''} ${bankInfo.accountNumber || ''}</td>
-                                <td>${statusBadge}</td>
-                                <td>${actionButtons}</td>
-                            </tr>
-                        `;
+              <tr>
+                <td>${item.applicationNumber || '-'}</td>
+                <td>${utils.formatDate(item.timestamp)}</td>
+                <td>${item.userName || ''}</td>
+                <td>${item.userEmail || ''}</td>
+                <td>${item.userPhone || ''}</td>
+                <td>${item.cardApproval || ''}</td>
+                <td class="amount-cell">${refundAmount.toLocaleString()}원</td>
+                <td>${bankInfo.bankName || ''} ${bankInfo.accountNumber || ''}</td>
+                <td>${statusBadge}</td>
+                <td>${actionButtons}</td>
+              </tr>
+            `;
           } else if (type === 'coupon') {
             return `
-                            <tr>
-                                <td>${utils.formatDate(item.timestamp)}</td>
-                                <td>${item.userName || ''}</td>
-                                <td>${item.userPhone || ''}</td>
-                                <td>${item.couponNumber || ''}</td>
-                                <td class="amount-cell">${(item.amount || 0).toLocaleString()}원</td>
-                                <td>${statusBadge}</td>
-                                <td>${actionButtons}</td>
-                            </tr>
-                        `;
+              <tr>
+                <td>${utils.formatDate(item.timestamp)}</td>
+                <td>${item.userName || ''}</td>
+                <td>${item.userPhone || ''}</td>
+                <td>${item.couponNumber || ''}</td>
+                <td class="amount-cell">${(item.amount || 0).toLocaleString()}원</td>
+                <td>${statusBadge}</td>
+                <td>${actionButtons}</td>
+              </tr>
+            `;
           }
           return '';
         }).join('');
@@ -1392,12 +1460,13 @@
 
     // 유틸리티 함수들
     function getStatusText(status) {
-      const statusMap = {
-        'pending': '대기중',
+      return {
+        'pending': '접수완료',
         'approved': '승인',
-        'rejected': '반려'
-      };
-      return statusMap[status] || status;
+        'rejected': '반려',
+        'completed': '송금완료',
+        'cancelled': '취소'
+      }[status] || status;
     }
 
     function formatDate(timestamp) {
@@ -1554,6 +1623,39 @@
         alert('데이터 삭제 중 오류가 발생했습니다.');
       }
     }
+
+    // 화면 크기 변경 시 레이아웃 조정 함수 수정
+    function adjustLayout() {
+      const header = document.querySelector('.dashboard-header');
+      const content = document.querySelector('.dashboard-content');
+      if (header && content) {
+        const headerHeight = header.offsetHeight;
+        content.style.marginTop = `${headerHeight}px`;
+        content.style.height = `calc(100vh - ${headerHeight}px)`;
+      }
+    }
+
+    // 이벤트 리스너 설정
+    document.addEventListener('DOMContentLoaded', function() {
+      adjustLayout(); // 초기 로드 시 실행
+      
+      // 데이터 로드 후에도 레이아웃 조정
+      ['coupon', 'refund', 'inquiry'].forEach(type => {
+        db.ref(`applications/${type}`).on('value', () => {
+          setTimeout(adjustLayout, 100); // 데이터 렌더링 후 레이아웃 조정
+        });
+      });
+    });
+
+    // 화면 크기 변경 시 레이아웃 조정
+    window.addEventListener('resize', adjustLayout);
+
+    // 메뉴 전환 시 레이아웃 조정
+    document.querySelectorAll('.menu-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        setTimeout(adjustLayout, 100); // 메뉴 전환 후 레이아웃 조정
+      });
+    });
   </script>
 </body>
 
