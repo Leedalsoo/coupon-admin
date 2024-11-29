@@ -882,6 +882,61 @@
       background: #6c757d;
       color: white;
     }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 20px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+      background-color: #2196F3;
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+    }
+
+    /* 숨김 행 스타일 수정 - 토글 스위치 칼럼은 제외 */
+    .hidden-row td:not(:last-child) {
+      display: none;
+    }
+    
+    .hidden-row td:last-child {
+      display: table-cell;
+      border-bottom: 1px solid #eee;
+    }
   </style>
 </head>
 
@@ -975,6 +1030,7 @@
                 <th>환불계좌</th>
                 <th>처리상태</th>
                 <th>관리</th>
+                <th>숨김/보이기</th>
               </tr>
             </thead>
             <tbody id="refundTableBody"></tbody>
@@ -1022,7 +1078,7 @@
           <label for="confirmPassword">새 비밀번호 확인</label>
           <input type="password" id="confirmPassword" class="form-input" required>
         </div>
-        <button type="submit" class="login-btn">변경하기</button>
+        <button type="submit" class="login-btn">변경하</button>
       </form>
     </div>
   </div>
@@ -1124,16 +1180,23 @@
           }
           
           if (type === 'refund') {
-            // 데이터 존재 여부 확인 및 기본값 설정
             const bankInfo = item.bankInfo || {};
             const refundAmount = item.refundAmount || 0;
+            const isHidden = item.isHidden || false;
             
-            // 상태에 따른 배지 클래스 설정
             const statusClass = item.status === 'cancelled' ? 'cancelled' : item.status;
             const statusBadge = `<span class="status-badge status-${statusClass}">${getStatusText(item.status)}</span>`;
             
+            const toggleSwitch = `
+              <label class="toggle-switch">
+                <input type="checkbox" ${isHidden ? 'checked' : ''} 
+                  onchange="toggleRowVisibility('${key}', this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            `;
+
             return `
-              <tr>
+              <tr class="${isHidden ? 'hidden-row' : ''}" data-key="${key}">
                 <td>${item.applicationNumber || '-'}</td>
                 <td>${utils.formatDate(item.timestamp)}</td>
                 <td>${item.userName || ''}</td>
@@ -1144,6 +1207,7 @@
                 <td>${bankInfo.bankName || ''} ${bankInfo.accountNumber || ''}</td>
                 <td>${statusBadge}</td>
                 <td>${actionButtons}</td>
+                <td>${toggleSwitch}</td>
               </tr>
             `;
           } else if (type === 'coupon') {
@@ -1395,16 +1459,23 @@
           }
           
           if (type === 'refund') {
-            // 데이터 존재 여부 확인 및 기본값 설정
             const bankInfo = item.bankInfo || {};
             const refundAmount = item.refundAmount || 0;
+            const isHidden = item.isHidden || false;
             
-            // 상태에 따른 배지 클래스 설정
             const statusClass = item.status === 'cancelled' ? 'cancelled' : item.status;
             const statusBadge = `<span class="status-badge status-${statusClass}">${getStatusText(item.status)}</span>`;
             
+            const toggleSwitch = `
+              <label class="toggle-switch">
+                <input type="checkbox" ${isHidden ? 'checked' : ''} 
+                  onchange="toggleRowVisibility('${key}', this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            `;
+
             return `
-              <tr>
+              <tr class="${isHidden ? 'hidden-row' : ''}" data-key="${key}">
                 <td>${item.applicationNumber || '-'}</td>
                 <td>${utils.formatDate(item.timestamp)}</td>
                 <td>${item.userName || ''}</td>
@@ -1415,6 +1486,7 @@
                 <td>${bankInfo.bankName || ''} ${bankInfo.accountNumber || ''}</td>
                 <td>${statusBadge}</td>
                 <td>${actionButtons}</td>
+                <td>${toggleSwitch}</td>
               </tr>
             `;
           } else if (type === 'coupon') {
@@ -1475,7 +1547,7 @@
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     }
 
-    // 페이지 로드 시 초기화
+    // 페지 로드 시 초기화
     document.addEventListener('DOMContentLoaded', () => {
       initializeData();
     });
@@ -1652,6 +1724,27 @@
         setTimeout(adjustLayout, 100); // 메뉴 전환 후 레이아웃 조정
       });
     });
+
+    // 행 숨김/보이기 토글 함수 추가
+    async function toggleRowVisibility(key, isHidden) {
+      try {
+        await db.ref(`applications/refund/${key}`).update({
+          isHidden: isHidden
+        });
+
+        const row = document.querySelector(`tr[data-key="${key}"]`);
+        if (row) {
+          if (isHidden) {
+            row.classList.add('hidden-row');
+          } else {
+            row.classList.remove('hidden-row');
+          }
+        }
+      } catch (error) {
+        console.error('상태 업데이트 중 오류:', error);
+        alert('처리 중 오류가 발생했습니다.');
+      }
+    }
   </script>
 </body>
 
