@@ -960,7 +960,7 @@
 
       <!-- 환불신청관리 섹션 -->
       <section id="refund" class="content-section">
-        <h2 class="section-title">불신청관리</h2>
+        <h2 class="section-title">환불신청관리</h2>
         <div class="table-container">
           <table class="data-table">
             <thead>
@@ -1461,7 +1461,7 @@
     // 유틸리티 함수들
     function getStatusText(status) {
       return {
-        'pending': '접수완료',
+        'pending': '신청접수',
         'approved': '승인',
         'rejected': '반려',
         'completed': '송금완료',
@@ -1523,12 +1523,15 @@
       e.preventDefault(); // 기본 제스처 동작 방지
     });
 
-    // 환불금액 요약 업데이트 함수
+    // 환불금액 요약 업데이트 함수 수정
     function updateRefundSummary() {
       const selectedDate = document.getElementById('refundDate').value;
-      const today = new Date().toISOString().split('T')[0];
+      
+      // 오늘 날짜를 한국 시간 기준으로 설정
+      const now = new Date();
+      const kstNow = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+      const today = kstNow.toISOString().split('T')[0];
 
-      // Firebase에서 환불 데이터 조회
       db.ref('applications/refund').once('value')
         .then(snapshot => {
           const refundData = snapshot.val() || {};
@@ -1536,48 +1539,41 @@
           let todayTotal = 0;
 
           Object.values(refundData).forEach(item => {
-            const itemDate = new Date(item.timestamp).toISOString().split('T')[0];
+            // 타임스탬프를 한국 시간으로 변환
+            const itemDate = new Date(item.timestamp);
+            const kstDate = new Date(itemDate.getTime() + (9 * 60 * 60 * 1000));
+            const itemDateStr = kstDate.toISOString().split('T')[0];
+            
             const amount = parseInt(item.refundAmount) || 0;
 
-            // 선택된 날짜의 합계 계산
-            if (itemDate === selectedDate) {
-              selectedDateTotal += amount;
-            }
+            // 취소 상태가 아닌 신청건만 합계에 포함
+            if (item.status !== 'cancelled') {
+              // 선택된 날짜의 합계 계산
+              if (itemDateStr === selectedDate) {
+                selectedDateTotal += amount;
+              }
 
-            // 오늘 날짜의 합계 계산
-            if (itemDate === today) {
-              todayTotal += amount;
+              // 오늘 날짜의 합계 계산 (한국 시간 기준)
+              if (itemDateStr === today) {
+                todayTotal += amount;
+              }
             }
           });
 
           // 결과 표시
-          document.getElementById('selectedDateTotal').textContent =
+          document.getElementById('selectedDateTotal').textContent = 
             selectedDateTotal.toLocaleString() + '원';
-          document.getElementById('todayTotal').textContent =
+          document.getElementById('todayTotal').textContent = 
             todayTotal.toLocaleString() + '원';
         });
     }
 
-    // 페이지 로드 시 초기화
-    document.addEventListener('DOMContentLoaded', () => {
-      // 날짜 입력 필드 초기값 설정
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('refundDate').value = today;
-      
-      // 초기 환불금액 요약 업데이트
-      updateRefundSummary();
-      
-      // 실시간 데이터 감시 설정
-      initializeData();
-    });
-
-    // 실시간 데이터 업데이 시 요약 정보도 갱신
+    // 실시간 데이터 업데이트를 위한 리스너 추가
     function initializeData() {
-      // 기존 코드...
-
+      const refundRef = firebase.database().ref('applications/refund');
+      
       refundRef.on('value', (snapshot) => {
-        updateTable('refund', snapshot.val());
-        updateRefundSummary(); // 요약 정보 갱신 추가
+        updateRefundSummary();
       });
     }
 
