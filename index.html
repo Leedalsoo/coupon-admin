@@ -113,8 +113,8 @@
     }
 
     .menu-btn {
-      padding: 0.6rem 1rem;
-      font-size: 0.9rem;
+      padding: 0.3rem 0.65rem !important;
+      font-size: 0.8rem !important;
       border: none;
       background: none;
       cursor: pointer;
@@ -212,8 +212,8 @@
       top: 0;
       background: #f8f9fa;
       z-index: 10;
-      padding: 0.5rem;
-      font-size: 0.6rem;
+      padding: 0.4rem;
+      font-size: 0.8rem;
       border-bottom: 1px solid #dee2e6;
     }
 
@@ -560,24 +560,25 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    /* 테이블 레이아웃 조정 */
+    /* 테이블 전체 레이아웃 조정 */
     .data-table {
       width: 100%;
       border-collapse: separate;
       border-spacing: 0;
     }
-
     .data-table th {
+      /* 테이블의 칼럼 제목 글자크기 및 칼럼내부여백조정 */
       position: sticky;
       top: 0;
       background: #f8f9fa;
       z-index: 10;
-      padding: 0.5rem;
-      font-size: 0.6rem;
+      padding: 0.25rem;
+      font-size: 0.65rem;
       border-bottom: 1px solid #dee2e6;
     }
 
     .data-table td {
+      /* 테이블내부의 데이터 글자크기 및 칼럼내부여백조정 */
       padding: 0.4rem 0.5rem;
       font-size: 0.56rem;
       border-bottom: 1px solid #eee;
@@ -607,13 +608,13 @@
       line-height: 1;
     }
 
-    /* 섹션 제목 여백 조정 */
+    /* 섹션(환불신청관리,쿠폰사용신청관리,등등) 제목 여백 조정 */
     .section-title {
       font-size: 1.1rem;
       margin: 0 0 1.2rem 0;
       padding: 0;
-      height: 30px;
-    }
+      height: 20px; /*제목이 포함된 높이를 조정할 수 있어 */
+    } 
 
     /* 반응형 조정 */
     @media (max-width: 768px) {
@@ -796,48 +797,6 @@
     /* 버튼 호버 효과 */
     .action-btn:hover {
       opacity: 0.9;
-    }
-
-    /* 아이콘 스타일 */
-    .action-btn i {
-      font-size: 0.8rem;
-    }
-
-    /* 헤더 부분에 다음 CSS 스타일 추가 */
-    .action-buttons {
-      display: flex;
-      gap: 0.3rem;
-      justify-content: flex-start;
-      align-items: center;
-    }
-
-    .action-btn {
-      padding: 0.3rem 0.6rem;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-      font-size: 0.75rem;
-      white-space: nowrap;
-    }
-
-    .approve-btn {
-      background: #28a745;
-      color: white;
-    }
-
-    .reject-btn {
-      background: #dc3545;
-      color: white;
-    }
-
-    .delete-btn {
-      background: #6c757d;
-      color: white;
-      padding: 0.3rem;
-    }
-
-    .action-btn:hover {
-      opacity: 0.8;
     }
 
     /* 아이콘 스타일 */
@@ -1071,7 +1030,7 @@
 
     /* 섹션 제목 크기 조정 */
     .section-title {
-      font-size: 1.05rem; /* 기존 1.5rem에서 30% 감소 */
+      font-size: 0.735 rem;/* 기존 1.5rem에서 30% 감소 */
       font-weight: 500;
       margin-bottom: 1rem;
       color: #333;
@@ -1143,6 +1102,14 @@
       display: block;
       margin: 0 auto;
     }
+
+    /* 전자서명 칼럼 길이 고정 */
+    .data-table td.signature-column {
+      width: 150px; /* 원하는 고정 너비로 설정 */
+      overflow: hidden; /* 내용이 넘칠 경우 숨김 처리 */
+      text-overflow: ellipsis; /* 넘치는 텍스트에 대해 생략 부호(...) 표시 */
+      white-space: nowrap; /* 텍스트 줄 바꿈 방지 */
+    }
   </style>
 </head>
 
@@ -1201,7 +1168,7 @@
     <main class="dashboard-content">
       <!-- 환불신청관리 섹션 -->
       <section id="refund" class="content-section active">
-        <h2 class="section-title">환불신청관리</h2>
+        <h2 class="section-title">환불신청관리</h2> 
         <div class="table-container">
           <table class="data-table">
             <thead>
@@ -1787,6 +1754,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       initializeData();
     });
+
 
 
     // 환불금액 요약 업데이트 함수 수정
