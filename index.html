@@ -396,6 +396,7 @@
       touch-action: pan-x pan-y;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
+      touch-action: pinch-zoom;
     }
 
     .dashboard-header {
@@ -795,6 +796,48 @@
     /* 버튼 호버 효과 */
     .action-btn:hover {
       opacity: 0.9;
+    }
+
+    /* 아이콘 스타일 */
+    .action-btn i {
+      font-size: 0.8rem;
+    }
+
+    /* 헤더 부분에 다음 CSS 스타일 추가 */
+    .action-buttons {
+      display: flex;
+      gap: 0.3rem;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .action-btn {
+      padding: 0.3rem 0.6rem;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .approve-btn {
+      background: #28a745;
+      color: white;
+    }
+
+    .reject-btn {
+      background: #dc3545;
+      color: white;
+    }
+
+    .delete-btn {
+      background: #6c757d;
+      color: white;
+      padding: 0.3rem;
+    }
+
+    .action-btn:hover {
+      opacity: 0.8;
     }
 
     /* 아이콘 스타일 */
@@ -1253,7 +1296,7 @@
           <label for="confirmPassword">새 비밀번호 확인</label>
           <input type="password" id="confirmPassword" class="form-input" required>
         </div>
-        <button type="submit" class="login-btn">변경하</button>
+        <button type="submit" class="login-btn">변경하기</button>
       </form>
     </div>
   </div>
@@ -1740,53 +1783,11 @@
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     }
 
-    // 페지 로드 시 초기화
+    // 페이지 로드 시 초기화
     document.addEventListener('DOMContentLoaded', () => {
       initializeData();
     });
 
-    // 핀치 줌 및 드래그 기능 설정
-    document.addEventListener('DOMContentLoaded', function () {
-      // 테이블 컨테이너 터치 이벤트 설정
-      const tableContainers = document.querySelectorAll('.table-container');
-
-      tableContainers.forEach(container => {
-        let startX;
-        let scrollLeft;
-
-        container.addEventListener('touchstart', function (e) {
-          startX = e.touches[0].pageX - container.offsetLeft;
-          scrollLeft = container.scrollLeft;
-        });
-
-        container.addEventListener('touchmove', function (e) {
-          if (!startX) return;
-          const x = e.touches[0].pageX - container.offsetLeft;
-          const walk = (x - startX) * 2;
-          container.scrollLeft = scrollLeft - walk;
-        });
-      });
-
-      // 테이블 헤더 고정 및 스크롤 동기화
-      const tables = document.querySelectorAll('.data-table');
-      tables.forEach(table => {
-        const headerHeight = table.querySelector('thead').offsetHeight;
-        table.style.marginTop = `-${headerHeight}px`;
-        table.querySelector('tbody').style.marginTop = `${headerHeight}px`;
-      });
-    });
-
-    // 화면 크기 변경 시 레이아웃 조정
-    window.addEventListener('resize', function () {
-      const header = document.querySelector('.dashboard-header');
-      const content = document.querySelector('.dashboard-content');
-      content.style.marginTop = `${header.offsetHeight + 10}px`;
-    });
-
-    // 터치 이벤트 최적화
-    document.addEventListener('gesturestart', function (e) {
-      e.preventDefault(); // 기본 제스처 동작 방지
-    });
 
     // 환불금액 요약 업데이트 함수 수정
     function updateRefundSummary() {
@@ -1896,7 +1897,7 @@
       }
     }
 
-    // 이��트 리스너 설정
+    // 이트 리스너 설정
     document.addEventListener('DOMContentLoaded', function() {
       adjustLayout(); // 초기 로드 시 실행
       
@@ -2030,6 +2031,26 @@
         modal.style.display = 'none';
       }
     }
+
+    // 핀치 줌 기능 추가
+    let scale = 1;
+    const maxScale = 3; // 최대 확대 비율
+    const minScale = 1; // 최소 축소 비율
+
+    document.addEventListener('gesturestart', function (e) {
+      e.preventDefault(); // 기본 제스처 동작 방지
+    });
+
+    document.addEventListener('gesturechange', function (e) {
+      e.preventDefault(); // 기본 제스처 동작 방지
+      scale = Math.min(maxScale, Math.max(minScale, scale * e.scale));
+      document.body.style.transform = `scale(${scale})`;
+      document.body.style.transformOrigin = '0 0'; // 변환 기준점 설정
+    });
+
+    document.addEventListener('gestureend', function (e) {
+      e.preventDefault(); // 기본 제스처 동작 방지
+    });
   </script>
 </body>
 
