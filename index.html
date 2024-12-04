@@ -170,8 +170,8 @@
     }
 
     .change-pw-btn {
-      background-color: #6c757d;
-      color: white;
+      background-color: #16f154;
+      color: rgb(254, 255, 252);
     }
 
     /* 대시보드 컨텐츠 */
@@ -1109,6 +1109,68 @@
       overflow: hidden; /* 내용이 넘칠 경우 숨김 처리 */
       text-overflow: ellipsis; /* 넘치는 텍스트에 대해 생략 부호(...) 표시 */
       white-space: nowrap; /* 텍스트 줄 바꿈 방지 */
+    }
+
+    /* 공통 버튼 스타일 */
+    .button-common {
+      padding: 0.3rem 0.65rem !important; /* 상하 패딩 0.3rem, 좌우 패딩 0.65rem으로 설정 */
+      border: none; /* 테두리 없음 */
+      border-radius: 3px; /* 모서리를 둥글게 설정 */
+      cursor: pointer; /* 마우스 커서를 포인터로 변경 */
+      font-size: 0.8rem !important; /* 글자 크기를 0.8rem으로 설정 */
+    }
+
+    .menu-btn {
+      background: #f0f1f1; /* 배경색을 부드러운 푸른색으로 설정 */
+      margin-right: 0.3rem; /* 오른쪽 여백을 0.3rem으로 설정 */
+      white-space: nowrap; /* 텍스트 줄 바꿈 방지 */
+      /* 공통 클래스 추가 */
+      @extend .button-common; /* 공통 클래스 적용 */
+    }
+
+    .user-btn {
+      background: #f8f9fa; /* 배경색을 연한 회색으로 설정 */
+      /* 공통 클래스 추가 */
+      @extend .button-common; /* 공통 클래스 적용 */
+    }
+
+    .menu-btn.active {
+      background: #007bff; /* 활성화된 버튼의 배경색을 파란색으로 설정 */
+      color: white; /* 활성화된 버튼의 글자색을 흰색으로 설정 */
+    }
+
+    .user-btn.export-btn {
+      background-color: #28a745; /* 배경색을 초록색으로 설정 */
+      color: white; /* 글자색을 흰색으로 설정 */
+    }
+
+    .user-btn.logout-btn {
+      background-color: #dc3545; /* 배경색을 빨간색으로 설정 */
+      color: white; /* 글자색을 흰색으로 설정 */
+    }
+    .change-pw-btn {
+      background-color: #2ed51f; /* 배경색을 빨간색으로 설정 */
+      color: white; /* 글자색을 흰색으로 설정 */
+      }
+
+    /* 공통 반응형 버튼 스타일 */
+    .button-responsive {
+      padding: 0.5rem 0.8rem; /* 상하 패딩 0.5rem, 좌우 패딩 0.8rem으로 설정 */
+      font-size: 0.8rem; /* 글자 크기를 0.8rem으로 설정 */
+    }
+
+    @media (max-width: 768px) {
+      .export-btn {
+        @extend .button-responsive; /* 공통 클래스 적용 */
+      }
+
+      .logout-btn {
+        @extend .button-responsive; /* 공통 클래스 적용 */
+      }
+
+      .change-pw-btn {
+        @extend .button-responsive; /* 공통 클래스 적용 */
+      }
     }
   </style>
 </head>
