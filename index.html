@@ -1686,7 +1686,7 @@
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     }
 
-    // 테이블 업데이트 수 수정 (기존 updateTable 함수에 추가)
+    // 테이블 업데이트 수정 (기존 updateTable 함수에 추가)
     function updateTable(type, data) {
       const tableBody = document.getElementById(`${type}TableBody`);
       if (!tableBody) return;
