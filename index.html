@@ -116,7 +116,8 @@
       padding: 0.3rem 0.65rem !important;
       font-size: 0.8rem !important;
       border: none;
-      background: #f0f1f1; /* 부드러운 푸른색으로 변경 (예: 부드러운 하늘색) */
+      background: #f0f1f1;
+      /* 부드러운 푸른색으로 변경 (예: 부드러운 하늘색) */
       cursor: pointer;
       border-radius: 3px;
       margin-right: 0.3rem;
@@ -233,10 +234,13 @@
 
     /* 상태 배지 */
     .status-badge {
-      padding: 0.15rem 0.3rem;
-      font-size: 0.56rem;
-      display: inline-block;
-      line-height: 1;
+      height: 20px;  /* 높이를 20px로 설정 */
+      line-height: 10px;  /* 텍스트 수직 가운데 정렬 */
+      padding: 0 0.65rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
     }
 
     .status-pending {
@@ -566,6 +570,7 @@
       border-collapse: separate;
       border-spacing: 0;
     }
+
     .data-table th {
       /* 테이블의 칼럼 제목 글자크기 및 칼럼내부여백조정 */
       position: sticky;
@@ -613,8 +618,9 @@
       font-size: 1.1rem;
       margin: 0 0 1.2rem 0;
       padding: 0;
-      height: 20px; /*제목이 포함된 높이를 조정할 수 있어 */
-    } 
+      height: 20px;
+      /*제목이 포함된 높이를 조정할 수 있어 */
+    }
 
     /* 반응형 조정 */
     @media (max-width: 768px) {
@@ -703,10 +709,12 @@
       font-weight: 500;
     }
 
+    /* 날짜별 금액 데이터 우측 정렬 */
     .summary-value {
       color: #007bff;
       font-weight: 600;
       font-family: 'Courier New', monospace;
+      text-align: right !important;  /* 우측 정렬 */
     }
 
     .date-selector {
@@ -729,13 +737,13 @@
       .menu-container {
         flex-wrap: wrap;
       }
-      
+
       .refund-summary-box {
         order: 2;
         width: 100%;
         margin: 0.5rem 0;
       }
-      
+
       .user-actions {
         order: 3;
         width: 100%;
@@ -879,6 +887,7 @@
       background: #17a2b8;
       color: white;
     }
+
     /* 환불처리완료 상태 배지 스타일 */
     .status-completed {
       background: #17a2b8;
@@ -928,11 +937,11 @@
       border-radius: 50%;
     }
 
-    input:checked + .toggle-slider {
+    input:checked+.toggle-slider {
       background-color: #2196F3;
     }
 
-    input:checked + .toggle-slider:before {
+    input:checked+.toggle-slider:before {
       transform: translateX(20px);
     }
 
@@ -940,7 +949,7 @@
     .hidden-row td:not(:last-child) {
       display: none;
     }
-    
+
     .hidden-row td:last-child {
       display: table-cell;
       border-bottom: 1px solid #eee;
@@ -948,13 +957,17 @@
 
     /* 전자서명 관련 스타일 */
     .signature-thumbnail {
-      max-width: 100px;
-      max-height: 50px;
-      cursor: pointer;
+      width: 30px;           /* 행 높이와 동일하게 설정 */
+      height: 30px;          /* 행 높이와 동일하게 설정 */
+      object-fit: contain;   /* 이미지 비율 유지하면서 컨테이너에 맞춤 */
+      vertical-align: middle;
+      cursor: pointer;       /* 클릭 가능 표시 */
     }
 
+    /* 모달에서 보여지는 원본 이미지 스타일 유지 */
     .signature-image {
       max-width: 100%;
+      height: auto;
       margin: 1rem 0;
     }
 
@@ -978,6 +991,7 @@
 
     /* 모바일 대응 */
     @media (max-width: 768px) {
+
       .status-badge,
       .action-btn,
       .toggle-switch,
@@ -1000,7 +1014,7 @@
     /* 상태 배지 스타일 */
     .data-table td .status-badge {
       padding: 0.15rem 0.3rem;
-      font-size: 0.56rem !important;
+      font-size: 0.56rem;
       line-height: 1;
       display: inline-block;
       border-radius: 3px;
@@ -1030,7 +1044,8 @@
 
     /* 섹션 제목 크기 조정 */
     .section-title {
-      font-size: 0.735 rem;/* 기존 1.5rem에서 30% 감소 */
+      font-size: 0.735 rem;
+      /* 기존 1.5rem에서 30% 감소 */
       font-weight: 500;
       margin-bottom: 1rem;
       color: #333;
@@ -1038,7 +1053,8 @@
 
     @media (max-width: 768px) {
       .section-title {
-        font-size: 0.91rem; /* 기존 1.3rem에서 30% 감소 */
+        font-size: 0.91rem;
+        /* 기존 1.3rem에서 30% 감소 */
         margin-bottom: 0.8rem;
       }
     }
@@ -1066,13 +1082,14 @@
     }
 
     @media (max-width: 768px) {
+
       .user-btn.export-btn,
       .user-btn.logout-btn,
       .user-btn.change-pw-btn {
         padding: 0.25rem 0.4rem;
         font-size: 0.4rem;
       }
-      
+
       .user-btn.export-btn i,
       .user-btn.logout-btn i,
       .user-btn.change-pw-btn i {
@@ -1083,8 +1100,10 @@
     /* 테이블 데이터 중앙 정렬 */
     .data-table td,
     .data-table th {
-      text-align: center; /* 가로 중앙 정렬 */
-      vertical-align: middle; /* 세로 중앙 정렬 */
+      text-align: center;
+      /* 가로 중앙 정렬 */
+      vertical-align: middle;
+      /* 세로 중앙 정렬 */
     }
 
     /* 테이블 내부 요소들도 중앙 정렬 유지 */
@@ -1105,78 +1124,81 @@
 
     /* 전자서명 칼럼 길이 고정 */
     .data-table th.signature-column {
-      width: 150px; /* 원하는 고정 너비로 설정 */
-      overflow: hidden; /* 내용이 넘칠 경우 숨김 처리 */
-      text-overflow: ellipsis; /* 넘치는 텍스트에 대해 생략 부호(...) 표시 */
-      white-space: nowrap; /* 텍스트 줄 바꿈 방지 */
+      width: 150px;
+      /* 원하는 고정 너비로 설정 */
+      overflow: hidden;
+      /* 내용이 넘칠 경우 숨김 처리 */
+      text-overflow: ellipsis;
+      /* 넘치는 텍스트에 대해 생략 부호(...) 표시 */
+      white-space: nowrap;
+      /* 텍스트 줄 바꿈 방지 */
     }
 
     /* 공통 버튼 스타일 */
-    .button-common {
-      padding: 0.3rem 0.65rem !important; /* 상하 패딩 0.3rem, 좌우 패딩 0.65rem으로 설정 */
-      border: none; /* 테두리 없음 */
-      border-radius: 3px; /* 모서리를 둥글게 설정 */
-      cursor: pointer; /* 마우스 커서를 포인터로 변경 */
-      font-size: 0.8rem !important; /* 글자 크기를 0.8rem으로 설정 */
+    .button-common,
+    .menu-btn,
+    .user-btn {
+      padding: 0.3rem 0.65rem;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.8rem;
     }
 
     .menu-btn {
-      background: #f0f1f1; /* 배경색을 부드러운 푸른색으로 설정 */
-      margin-right: 0.3rem; /* 오른쪽 여백을 0.3rem으로 설정 */
-      white-space: nowrap; /* 텍스트 줄 바꿈 방지 */
-      /* 공통 클래스 추가 */
-      @extend .button-common; /* 공통 클래스 적용 */
+      background: #f0f1f1;
+      margin-right: 0.3rem;
+      white-space: nowrap;
     }
 
     .user-btn {
-      background: #f8f9fa; /* 배경색을 연한 회색으로 설정 */
-      /* 공통 클래스 추가 */
-      @extend .button-common; /* 공통 클래스 적용 */
+      background: #f8f9fa;
     }
 
     .menu-btn.active {
-      background: #007bff; /* 활성화된 버튼의 배경색을 파란색으로 설정 */
-      color: white; /* 활성화된 버튼의 글자색을 흰색으로 설정 */
+      background: #007bff;
+      color: white;
     }
 
     .user-btn.export-btn {
-      background-color: #28a745; /* 배경색을 초록색으로 설정 */
-      color: white; /* 글자색을 흰색으로 설정 */
+      background-color: #28a745;
+      color: white;
     }
 
     .user-btn.logout-btn {
-      background-color: #dc3545; /* 배경색을 빨간색으로 설정 */
-      color: white; /* 글자색을 흰색으로 설정 */
+      background-color: #dc3545;
+      color: white;
     }
+
     .change-pw-btn {
-      background-color: #2ed51f; /* 배경색을 빨간색으로 설정 */
-      color: white; /* 글자색을 흰색으로 설정 */
-      }
+      background-color: #2ed51f;
+      color: white;
+    }
 
     /* 공통 반응형 버튼 스타일 */
     .button-responsive {
-      padding: 0.5rem 0.8rem; /* 상하 패딩 0.5rem, 좌우 패딩 0.8rem으로 설정 */
-      font-size: 0.8rem; /* 글자 크기를 0.8rem으로 설정 */
+      padding: 0.5rem 0.8rem;
+      /* 상하 패딩 0.5rem, 좌우 패딩 0.8rem으로 설정 */
+      font-size: 0.8rem;
+      /* 글자 크기를 0.8rem으로 설정 */
     }
 
     @media (max-width: 768px) {
-      .export-btn {
-        @extend .button-responsive; /* 공통 클래스 적용 */
-      }
 
-      .logout-btn {
-        @extend .button-responsive; /* 공통 클래스 적용 */
-      }
-
+      .export-btn,
+      .logout-btn,
       .change-pw-btn {
-        @extend .button-responsive; /* 공통 클래스 적용 */
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
       }
     }
 
     /* 테이블 컨테이너 스크롤 설정 */
     .table-container {
-      max-height: calc(100vh - 250px);  /* 헤더와 여유 공간 고려한 높이 */
-      overflow-y: auto;  /* 세로 스크롤 활성화 */
+      max-height: calc(100vh - 250px);
+      /* 헤더와 여유 공간 고려한 높이 */
+      overflow-y: auto;
+      /* 세로 스크롤 활성화 */
       border: 1px solid #eee;
       border-radius: 4px;
     }
@@ -1187,7 +1209,7 @@
       top: 0;
       background: white;
       z-index: 10;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
     /* 스크롤바 스타일링 */
@@ -1206,6 +1228,117 @@
 
     .table-container::-webkit-scrollbar-thumb:hover {
       background: #555;
+    }
+
+    /* 테이블 행과 셀 스타일 조정 */
+    .data-table td,
+    .data-table th {
+      padding: 1rem;
+      font-size: 1.1rem;
+      line-height: 1.5;
+      vertical-align: middle;
+    }
+
+    /* 서명 이미지 크기 조정 */
+    .signature-thumbnail {
+      width: 30px;           /* 행 높이와 동일하게 설정 */
+      height: 30px;          /* 행 높이와 동일하게 설정 */
+      object-fit: contain;   /* 이미지 비율 유지하면서 컨테이너에 맞춤 */
+      vertical-align: middle;
+      cursor: pointer;       /* 클릭 가능 표시 */
+    }
+
+    /* 금액 셀 스타일 */
+    .amount-cell {
+      font-size: 0.77rem;
+      text-align: right !important;
+      padding-right: 1rem;
+      font-family: 'Noto Sans KR', sans-serif;  /* 고딕체 적용 */
+      font-weight: 700;  /* 두껍게 설정 */
+    }
+
+    /* 상태 뱃지 크기 조정 */
+    .status-badge {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+    }
+
+    /* 액션 버튼 크기 조정 */
+    .action-btn {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      margin: 0.25rem;
+    }
+
+    /* 테이블 행과 모든 요소 높이 통일 */
+    .data-table tr {
+      height: 30px;
+    }
+
+    .data-table td,
+    .data-table th {
+      height: 30px;
+      font-size: 0.77rem;
+      line-height: 30px;
+      vertical-align: middle;
+      padding: 0;
+      white-space: nowrap;    
+      overflow: hidden;       
+      text-overflow: ellipsis; 
+    }
+
+    /* 이미지 크기 제한 */
+    .signature-thumbnail {
+      width: 30px;
+      height: 30px;
+      object-fit: contain;
+      vertical-align: middle;
+    }
+
+    /* 액션 버튼, 상태 배지 크기 제한 */
+    .action-btn,
+    .status-badge,
+    .transfer-btn {
+      height: 20px;
+      line-height: 20px;
+      padding: 0 0.65rem;
+      margin: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+
+    /* 토글 스위치 크기 제한 */
+    .toggle-switch {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+
+    /* 모든 셀 내부 요소 중앙 정렬 */
+    .data-table td > *,
+    .data-table th > * {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+
+    /* 금액 셀 우측 정렬 유지 */
+    .amount-cell {
+      text-align: right !important;
+      padding-right: 0.65rem;
+    }
+
+    /* 승인번호, 환불계좌 칼럼 우측 정렬 */
+    .data-table td:nth-child(6),  /* 승인번호 칼럼 */
+    .data-table td:nth-child(8) { /* 환불계좌 칼럼 */
+      text-align: right;
+      padding-right: 1rem;
     }
   </style>
 </head>
@@ -1235,9 +1368,11 @@
           <button class="menu-btn active" data-section="refund">환불신청관리</button>
           <button class="menu-btn" data-section="coupon">쿠폰사용신청관리</button>
           <button class="menu-btn" data-section="inquiry">문의사항관리</button>
+          <button class="menu-btn" data-section="transfer">송금관리</button>
           <button class="menu-btn" data-section="signature">전자서명</button>
+          <button class="menu-btn" data-section="refundLedger">환불대장</button>
         </div>
-        
+
         <!-- 환불금액 요약 박스 추가 -->
         <div class="refund-summary-box">
           <div class="summary-row">
@@ -1257,7 +1392,7 @@
             <i class="fas fa-file-excel"></i> 엑셀저장
           </button>
           <button class="user-btn logout-btn" onclick="logout()">로그아웃</button>
-          <button class="user-btn change-pw-btn" onclick="showChangePasswordModal()">비밀번호 변경</button>
+          <button class="user-btn change-pw-btn" onclick="showChangePasswordModal()">비���번호 변경</button>
         </div>
       </div>
     </header>
@@ -1265,7 +1400,7 @@
     <main class="dashboard-content">
       <!-- 환불신청관리 섹션 -->
       <section id="refund" class="content-section active">
-        <h2 class="section-title">환불신청관리</h2> 
+        <h2 class="section-title">환불신청관리</h2>
         <div class="table-container">
           <table class="data-table">
             <thead>
@@ -1330,6 +1465,30 @@
         </div>
       </section>
 
+      <!-- 송금관리 섹션 -->
+      <section id="transfer" class="content-section">
+        <h2 class="section-title">송금관리</h2>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>환불신청번호</th>
+                <th>신청일시</th>
+                <th>신청인</th>
+                <th>이메일</th>
+                <th>전화번호</th>
+                <th>승인번호</th>
+                <th>환불금액</th>
+                <th>환불계좌</th>
+                <th>처리상태</th>
+                <th>송금</th>
+              </tr>
+            </thead>
+            <tbody id="transferTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
       <!-- 전자서명 섹션 -->
       <section id="signature" class="content-section">
         <h2 class="section-title">전자서명 관리</h2>
@@ -1338,6 +1497,30 @@
           <button class="submit-button" onclick="searchSignature()">서명자료 검색</button>
         </div>
         <div id="signatureResults"></div>
+      </section>
+
+      <!-- 환불대장 섹션 추가 -->
+      <section id="refundLedger" class="content-section">
+        <h2 class="section-title">환불대장</h2>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>환불신청번호</th>
+                <th>신청일시</th>
+                <th>신청인</th>
+                <th>이메일</th>
+                <th>전화번호</th>
+                <th>승인번호</th>
+                <th>환불금액</th>
+                <th>환불계좌</th>
+                <th>처리상태</th>
+                <th>송금시간</th>
+              </tr>
+            </thead>
+            <tbody id="refundLedgerTableBody"></tbody>
+          </table>
+        </div>
       </section>
     </main>
   </div>
@@ -1427,7 +1610,7 @@
         sessionStorage.setItem('adminId', adminId);
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('mainSection').style.display = 'block';
-        
+
         // 로그인 성공 후 레이아웃 초기화
         setTimeout(() => {
           loadSectionData('refund');
@@ -1455,7 +1638,7 @@
         .map(([key, item]) => {
           const statusBadge = `<span class="status-badge status-${item.status}">${utils.getStatusText(item.status)}</span>`;
           let actionButtons = '';
-          
+
           if (type === 'refund') {
             actionButtons = `
               <div class="action-buttons">
@@ -1472,15 +1655,15 @@
               </div>
             `;
           }
-          
+
           if (type === 'refund') {
             const bankInfo = item.bankInfo || {};
             const refundAmount = item.refundAmount || 0;
             const isHidden = item.isHidden || false;
-            
+
             const statusClass = item.status === 'cancelled' ? 'cancelled' : item.status;
             const statusBadge = `<span class="status-badge status-${statusClass}">${getStatusText(item.status)}</span>`;
-            
+
             const toggleSwitch = `
               <label class="toggle-switch">
                 <input type="checkbox" ${isHidden ? 'checked' : ''} 
@@ -1498,10 +1681,10 @@
                 <td>${item.userPhone || ''}</td>
                 <td>${item.cardApproval || ''}</td>
                 <td class="amount-cell">${refundAmount.toLocaleString()}원</td>
-                <td>${bankInfo.bankName || ''} ${bankInfo.accountNumber || ''}</td>
-                <td>${item.signatureUrl ? 
-                  `<img src="${item.signatureUrl}" alt="전자서명" class="signature-thumbnail">` : 
-                  '-'}</td>
+                <td>${getBankNameKorean(item.bankInfo?.bankName || '')} ${(item.bankInfo?.accountNumber || '')} (${item.bankInfo?.accountHolder || ''})</td>
+                <td>${item.signature ?
+                `<img src="${item.signature}" alt="전자서명" class="signature-thumbnail" style="max-width: 100px; height: auto;">` :
+                '-'}</td>
                 <td>${statusBadge}</td>
                 <td>${actionButtons}</td>
                 <td>${toggleSwitch}</td>
@@ -1545,11 +1728,11 @@
 
         const actionText = newStatus === 'pending' ? '초기화' :
           newStatus === 'approved' ? '승인' :
-          newStatus === 'completed' ? '완료' : '반려';
+            newStatus === 'completed' ? '완료' : '반려';
 
-        const message = newStatus === 'completed' ? 
-                        '환불이 완료되었습니다.' :
-                        `${type === 'coupon' ? '쿠폰' : '환불'} 신청이 ${actionText}되었습니다.`;
+        const message = newStatus === 'completed' ?
+          '환불이 완료되었습니다.' :
+          `${type === 'coupon' ? '쿠폰' : '환불'} 신청이 ${actionText}되었습니다.`;
 
         alert(message);
       } catch (error) {
@@ -1570,9 +1753,46 @@
         });
     }
 
-    // 실시간 업데이트 설정
+    // 실시간 업데이트 설정 함수 수정
     function setupRealtimeUpdates() {
-      ['coupon', 'refund', 'inquiry'].forEach(type => {
+      const refundRef = db.ref('applications/refund');
+      
+      refundRef.on('value', snapshot => {
+        const data = snapshot.val();
+        const activeSection = document.querySelector('.content-section.active');
+        
+        if (activeSection) {
+          switch (activeSection.id) {
+            case 'transfer':
+              const approvedData = {};
+              if (data) {
+                Object.entries(data).forEach(([key, value]) => {
+                  if (value.status === 'approved') {
+                    approvedData[key] = value;
+                  }
+                });
+              }
+              updateTransferTable(approvedData);
+              break;
+              
+            case 'refund':
+              updateTable('refund', data);
+              break;
+              
+            case 'refundLedger':
+              updateRefundLedgerTable(data);
+              break;
+          }
+        }
+        
+        // 환불대장 데이터는 항상 업데이트
+        if (document.getElementById('refundLedger')) {
+          updateRefundLedgerTable(data);
+        }
+      });
+
+      // 다른 섹션들의 실시간 업데이트 유지
+      ['coupon', 'inquiry'].forEach(type => {
         db.ref(`applications/${type}`).on('value', snapshot => {
           if (document.getElementById(type).classList.contains('active')) {
             updateTable(type, snapshot.val());
@@ -1622,7 +1842,7 @@
       hideChangePasswordModal();
     });
 
-    // 메뉴 전환 이벤트 설정
+    // 메뉴 전환 이벤트 리스너 수정
     document.querySelectorAll('.menu-btn').forEach(button => {
       button.addEventListener('click', function () {
         const sectionId = this.dataset.section;
@@ -1635,20 +1855,58 @@
         });
         document.getElementById(sectionId).classList.add('active');
 
-        loadSectionData(sectionId);
+        // 섹션별 데이터 로드
+        if (sectionId === 'refundLedger') {
+          db.ref('applications/refund').once('value')
+            .then(snapshot => {
+              updateRefundLedgerTable(snapshot.val());
+            });
+        } else if (sectionId === 'transfer') {
+          db.ref('applications/refund').once('value')
+            .then(snapshot => {
+              const data = snapshot.val();
+              const approvedData = {};
+              if (data) {
+                Object.entries(data).forEach(([key, value]) => {
+                  if (value.status === 'approved') {
+                    approvedData[key] = value;
+                  }
+                });
+              }
+              updateTransferTable(approvedData);
+            });
+        } else {
+          loadSectionData(sectionId);
+        }
       });
     });
 
-    // 초기화
+    // 초기화 함수 수정
     document.addEventListener('DOMContentLoaded', function () {
       const adminId = sessionStorage.getItem('adminId');
       if (adminId) {
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('mainSection').style.display = 'block';
-        
-        // 세션 유지 상태에서 페이지 로드 시 레이아웃 초기화
+
         setTimeout(() => {
+          // 환불신청 데이터 로드
           loadSectionData('refund');
+          
+          // 송금관리 데이터 초기 로드
+          db.ref('applications/refund').once('value')
+            .then(snapshot => {
+              const data = snapshot.val();
+              const approvedData = {};
+              if (data) {
+                Object.entries(data).forEach(([key, value]) => {
+                  if (value.status === 'approved') {
+                    approvedData[key] = value;
+                  }
+                });
+              }
+              updateTransferTable(approvedData);
+            });
+          
           setupRealtimeUpdates();
           adjustLayout();
         }, 100);
@@ -1737,7 +1995,7 @@
         .map(([key, item]) => {
           const statusBadge = `<span class="status-badge status-${item.status}">${utils.getStatusText(item.status)}</span>`;
           let actionButtons = '';
-          
+
           if (type === 'refund') {
             actionButtons = `
               <div class="action-buttons">
@@ -1754,15 +2012,15 @@
               </div>
             `;
           }
-          
+
           if (type === 'refund') {
             const bankInfo = item.bankInfo || {};
             const refundAmount = item.refundAmount || 0;
             const isHidden = item.isHidden || false;
-            
+
             const statusClass = item.status === 'cancelled' ? 'cancelled' : item.status;
             const statusBadge = `<span class="status-badge status-${statusClass}">${getStatusText(item.status)}</span>`;
-            
+
             const toggleSwitch = `
               <label class="toggle-switch">
                 <input type="checkbox" ${isHidden ? 'checked' : ''} 
@@ -1780,10 +2038,10 @@
                 <td>${item.userPhone || ''}</td>
                 <td>${item.cardApproval || ''}</td>
                 <td class="amount-cell">${refundAmount.toLocaleString()}원</td>
-                <td>${bankInfo.bankName || ''} ${bankInfo.accountNumber || ''}</td>
-                <td>${item.signatureUrl ? 
-                  `<img src="${item.signatureUrl}" alt="전자서명" class="signature-thumbnail">` : 
-                  '-'}</td>
+                <td>${getBankNameKorean(item.bankInfo?.bankName || '')} ${(item.bankInfo?.accountNumber || '')} (${item.bankInfo?.accountHolder || ''})</td>
+                <td>${item.signature ?
+                `<img src="${item.signature}" alt="전자서명" class="signature-thumbnail" style="max-width: 100px; height: auto;">` :
+                '-'}</td>
                 <td>${statusBadge}</td>
                 <td>${actionButtons}</td>
                 <td>${toggleSwitch}</td>
@@ -1857,7 +2115,7 @@
     // 환불금액 요약 업데이트 함수 수정
     function updateRefundSummary() {
       const selectedDate = document.getElementById('refundDate').value;
-      
+
       // 오늘 날짜를 한국 시간 기준으로 설정
       const now = new Date();
       const kstNow = new Date(now.getTime() + (9 * 60 * 60 * 1000));
@@ -1874,7 +2132,7 @@
             const itemDate = new Date(item.timestamp);
             const kstDate = new Date(itemDate.getTime() + (9 * 60 * 60 * 1000));
             const itemDateStr = kstDate.toISOString().split('T')[0];
-            
+
             const amount = parseInt(item.refundAmount) || 0;
 
             // 취소 상태가 아닌 신청건만 합계에 포함
@@ -1892,9 +2150,9 @@
           });
 
           // 결과 표시
-          document.getElementById('selectedDateTotal').textContent = 
+          document.getElementById('selectedDateTotal').textContent =
             selectedDateTotal.toLocaleString() + '원';
-          document.getElementById('todayTotal').textContent = 
+          document.getElementById('todayTotal').textContent =
             todayTotal.toLocaleString() + '원';
         });
     }
@@ -1902,7 +2160,7 @@
     // 실시간 데이터 업데이트를 위한 리스너 추가
     function initializeData() {
       const refundRef = firebase.database().ref('applications/refund');
-      
+
       refundRef.on('value', (snapshot) => {
         updateRefundSummary();
       });
@@ -1922,7 +2180,7 @@
         'refund': '환불신청',
         'inquiry': '문의사항'
       };
-      
+
       if (!confirm(`선택한 ${confirmMessage[type]} 데이터를 삭제하시겠습니까?\n삭제 데이터는 복구할  없습니다.`)) {
         return;
       }
@@ -1930,7 +2188,7 @@
       try {
         // Firebase에서 데이터 삭제
         await db.ref(`applications/${type}/${key}`).remove();
-        
+
         // 삭제 로그 기록 (선택사항)
         await db.ref('deleteLogs').push({
           type: type,
@@ -1940,7 +2198,7 @@
         });
 
         alert('데이터가 삭제되었습니다.');
-        
+
         // 환불신청 데이터인 경 요약 정보 업데이
         if (type === 'refund') {
           updateRefundSummary();
@@ -1963,9 +2221,9 @@
     }
 
     // 이트 리스너 설정
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       adjustLayout(); // 초기 로드 시 실행
-      
+
       // 데이터 로드 후에도 레이아웃 조정
       ['coupon', 'refund', 'inquiry'].forEach(type => {
         db.ref(`applications/${type}`).on('value', () => {
@@ -1973,16 +2231,18 @@
         });
       });
     });
+    
 
     // 화면 크기 변경 시 레이아웃 조정
     window.addEventListener('resize', adjustLayout);
 
     // 메뉴 전환 시 레이아웃 조정
     document.querySelectorAll('.menu-btn').forEach(button => {
-      button.addEventListener('click', function() {
+      button.addEventListener('click', function () {
         setTimeout(adjustLayout, 100); // 메뉴 전환 후 레이아웃 조정
       });
     });
+    
 
     // 행 숨김/보이기 토글 함수 추가
     async function toggleRowVisibility(key, isHidden) {
@@ -2031,7 +2291,7 @@
     function showSignatureModal(results) {
       const modal = document.getElementById('signatureModal');
       const details = document.getElementById('signatureDetails');
-      
+
       if (results.length === 0) {
         alert('검색 결과가 없습니다.');
         return;
@@ -2044,9 +2304,9 @@
           <p><strong>신청인:</strong> ${data.userName}</p>
           <p><strong>메일:</strong> ${data.userEmail}</p>
           <p><strong>승인번호:</strong> ${data.cardApproval}</p>
-          <p><strong>환���금액:</strong> ${data.refundAmount.toLocaleString()}원</p>
-          <p><strong>환불계좌:</strong> ${data.bankInfo.bankName} ${data.bankInfo.accountNumber}</p>
-          ${data.signatureUrl ? `<img src="${data.signatureUrl}" alt="전자서명" class="signature-image">` : '<p>서명 없음</p>'}
+          <p><strong>환불금액:</strong> ${data.refundAmount.toLocaleString()}��</p>
+          <p><strong>환불계좌:</strong> ${getBankNameKorean(data.bankInfo.bankName)} ${data.bankInfo.accountNumber}</p>
+          ${data.signature ? `<img src="${data.signature}" alt="전자서명" class="signature-image">` : '<p>서명 없음</p>'}
           <hr>
         </div>
       `).join('');
@@ -2059,7 +2319,7 @@
     function printSignatureDetails() {
       const printWindow = window.open('', '', 'width=800,height=600');
       const content = document.getElementById('signatureDetails').innerHTML;
-      
+
       printWindow.document.write(`
         <html>
           <head>
@@ -2076,7 +2336,7 @@
           </body>
         </html>
       `);
-      
+
       printWindow.document.close();
       printWindow.focus();
       printWindow.print();
@@ -2090,7 +2350,7 @@
     }
 
     // 모달 외부 클릭 시 닫기
-    window.onclick = function(event) {
+    window.onclick = function (event) {
       const modal = document.getElementById('signatureModal');
       if (event.target === modal) {
         modal.style.display = 'none';
@@ -2100,7 +2360,7 @@
     // 핀치 줌 기능 추가
     let scale = 1;
     const maxScale = 3; // 최대 확대 비율
-    const minScale = 1; // 최소 축소 비율
+    const minScale = 0.5; // 최소 축소 비율
 
     document.addEventListener('gesturestart', function (e) {
       e.preventDefault(); // 기본 제스처 동작 방지
@@ -2118,7 +2378,7 @@
     });
 
     // 환불 신청 폼 제출 시 전자서명 모달 표시
-    document.getElementById('refundForm').addEventListener('submit', function(e) {
+    document.getElementById('refundForm').addEventListener('submit', function (e) {
       e.preventDefault(); // 기본 제출 동작 방지
       showSignatureModal(); // 전자서명 모달 표시
     });
@@ -2134,13 +2394,155 @@
     }
 
     // 서명 저장 버튼 클릭 시 처리
-    document.getElementById('saveSignature').addEventListener('click', async function() {
+    document.getElementById('saveSignature').addEventListener('click', async function () {
       // 서명 데이터 처리 및 Firebase에 저장하는 로직 추가
       const signatureData = signaturePad.toDataURL(); // 서명 데이터를 데이터 URL로 변환
       // Firebase에 서명 데이터 저장 로직 추가
       // ...
       hideSignatureModal(); // 모달 숨김
     });
+
+    // 은행명 매핑 함수 수정
+    function getBankNameKorean(engName) {
+      const bankNames = {
+        'kb': '국민은행',
+        'shinhan': '신한은행',
+        'woori': '우리은행',
+        'keb': '하나은행',
+        'hana': '하나은행',
+        'ibk': '기업은행',
+        'nh': '농협은행',
+        'nonghyup': '농협은행',
+        'sc': 'SC제일은행',
+        'city': '씨티은행',
+        'dgb': '대구은행',
+        'bnk': '부산은행',
+        'kjb': '광주은행',
+        'kwangju': '광주은행',
+        'jbb': '전북은행',
+        'jeju': '제주은행',
+        'post': '우체국',
+        'k': '케이뱅크',
+        'kakao': '카카오뱅크',
+        'toss': '토스뱅크',
+        'sh': '신한은행',
+        'standard': 'SC제일은행',
+        'kn': '경남은행',
+        'knb': '경남은행',
+        'kj': '광주은행'
+      };
+      return bankNames[engName.toLowerCase()] || engName;
+    }
+
+    // 송금관리 테이블 업데이트 함수 수정
+    function updateTransferTable(data) {
+      const tableBody = document.getElementById('transferTableBody');
+      if (!tableBody) return;
+
+      if (!data || Object.keys(data).length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="10" class="no-data">데이터가 없습니다.</td></tr>';
+        return;
+      }
+
+      const rows = Object.entries(data)
+        .filter(([_, item]) => item.status === 'approved' || item.status === 'transfer') // 승인됨 또는 송금처리된 데이터만 표시
+        .sort((a, b) => new Date(b[1].timestamp) - new Date(a[1].timestamp))
+        .map(([key, item]) => {
+          const statusBadge = `<span class="status-badge status-${item.status}">${item.status === 'transfer' ? '송금처리' : utils.getStatusText(item.status)}</span>`;
+          
+          return `
+            <tr>
+              <td>${item.applicationNumber || '-'}</td>
+              <td>${utils.formatDate(item.timestamp)}</td>
+              <td>${item.userName || ''}</td>
+              <td>${item.userEmail || ''}</td>
+              <td>${item.userPhone || ''}</td>
+              <td>${item.cardApproval || ''}</td>
+              <td class="amount-cell">${(item.refundAmount || 0).toLocaleString()}원</td>
+              <td>${getBankNameKorean(item.bankInfo?.bankName || '')} ${(item.bankInfo?.accountNumber || '')} (${item.bankInfo?.accountHolder || ''})</td>
+              <td>${statusBadge}</td>
+              <td>
+                ${item.status === 'approved' ? 
+                  `<button class="action-btn transfer-btn" onclick="processTransfer('${key}')">송금</button>` : 
+                  utils.formatDate(item.transferredAt)}
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+      tableBody.innerHTML = rows;
+    }
+
+    // 송금 처리 함수 수정
+    async function processTransfer(key) {
+      try {
+        const transferredAt = new Date().toISOString();
+        const refRef = db.ref(`applications/refund/${key}`);
+        
+        // 현재 데이터 가져오기
+        const snapshot = await refRef.once('value');
+        const data = snapshot.val();
+        
+        if (!data) {
+          throw new Error('데이터를 찾을 수 없습니다.');
+        }
+
+        // SMS 발송
+        await sendSMS(data.userPhone, `귀하의 환불신청계좌로 환불금액을 입금합니다.`);
+        
+        // 상태 업데이트
+        await refRef.update({
+          status: 'completed', // 송금완료 상태로 변경
+          transferredAt: transferredAt
+        });
+
+        alert('송금처리가 완료되었습니다.');
+      } catch (error) {
+        console.error('송금처리 중 오류:', error);
+        alert('송금처리 중 오류가 발생했습니다.');
+      }
+    }
+
+    // SMS 발송 함수 (실제 SMS 발송 서비스와 연동 필요)
+    async function sendSMS(phone, message) {
+      // 여기에 실제 SMS 발송 로직 구현
+      console.log(`SMS sent to ${phone}: ${message}`);
+    }
+
+    // 환불대장 테이블 업데이트 함수 수정
+    function updateRefundLedgerTable(data) {
+      const tableBody = document.getElementById('refundLedgerTableBody');
+      if (!tableBody) return;
+
+      if (!data || Object.keys(data).length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="10" class="no-data">데이터가 없습니다.</td></tr>';
+        return;
+      }
+
+      const rows = Object.entries(data)
+        .filter(([_, item]) => item.status === 'completed' && item.transferredAt) // 송금완료 상태이고 송금시간이 있는 데이터만 필터링
+        .sort((a, b) => new Date(b[1].transferredAt) - new Date(a[1].transferredAt)) // 송금시간 기준으로 정렬
+        .map(([key, item]) => {
+          const statusBadge = `<span class="status-badge status-${item.status}">${utils.getStatusText(item.status)}</span>`;
+          
+          return `
+            <tr>
+              <td>${item.applicationNumber || '-'}</td>
+              <td>${utils.formatDate(item.timestamp)}</td>
+              <td>${item.userName || ''}</td>
+              <td>${item.userEmail || ''}</td>
+              <td>${item.userPhone || ''}</td>
+              <td>${item.cardApproval || ''}</td>
+              <td class="amount-cell">${(item.refundAmount || 0).toLocaleString()}원</td>
+              <td>${getBankNameKorean(item.bankInfo?.bankName || '')} ${(item.bankInfo?.accountNumber || '')} (${item.bankInfo?.accountHolder || ''})</td>
+              <td>${statusBadge}</td>
+              <td>${utils.formatDate(item.transferredAt)}</td>
+            </tr>
+          `;
+        }).join('');
+
+      tableBody.innerHTML = rows;
+    }
   </script>
 </body>
 
