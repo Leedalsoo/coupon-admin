@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 시스템</title>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <link rel="stylesheet" href="styles_admin.css">
+</head>
+
+<body>
+  <!-- 로그인 섹션 -->
+  <div id="loginSection" class="login-container">
+    <form id="loginForm" class="login-form">
+      <h2 style="margin-bottom: 1.5rem; text-align: center;">관리자 로그인</h2>
+      <div class="form-group">
+        <label for="adminId">관리자 ID</label>
+        <input type="text" id="adminId" class="form-input" required>
+      </div>
+      <div class="form-group">
+        <label for="password">비밀번호</label>
+        <input type="password" id="password" class="form-input" required>
+      </div>
+      <button type="submit" class="login-btn">로그인</button>
+    </form>
+  </div>
+
+  <!-- 메인 대시보드 섹션 -->
+  <div id="mainSection" class="dashboard">
+    <header class="dashboard-header">
+      <div class="menu-container">
+        <div class="main-menu">
+          <button class="menu-btn active" data-section="refund">환불신청관리</button>
+          <button class="menu-btn" data-section="transfer">송금관리</button>
+          <button class="menu-btn" data-section="signature">전자서명</button>
+          <button class="menu-btn" data-section="refundLedger">환불대장</button>
+          <button class="menu-btn" data-section="inquiry">문의관리</button>
+        </div>
+
+        <!-- 환불금액 요약 박스 추가 -->
+        <div class="refund-summary-box">
+          <div class="summary-row">
+            <span class="summary-label">금일 실시간 환불신청 총액:</span>
+            <span id="todayTotal" class="summary-value">0원</span>
+          </div>
+          <div class="summary-row">
+            <div class="date-selector">
+              <input type="date" id="refundDate" onchange="updateRefundSummary()">
+              <span id="selectedDateTotal" class="summary-value">0원</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="user-actions">
+          <button class="user-btn export-btn" onclick="exportToExcel()">
+            <i class="fas fa-file-excel"></i> 엑셀저장
+          </button>
+          <button class="user-btn logout-btn" onclick="logout()">로그아웃</button>
+          <button class="user-btn change-pw-btn" onclick="showChangePasswordModal()">비밀번호 변경</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard-content">
+      <!-- 환불신청관리 섹션 -->
+      <section id="refund" class="content-section active">
+        <h2 class="section-title">환불신청관리</h2>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>환불신청번호</th>
+                <th>신청일시</th>
+                <th>신청인</th>
+                <th>이메일</th>
+                <th>전화번호</th>
+                <th>승인번호</th>
+                <th>환불신청금액</th>
+                <th>환불송금액</th>
+                <th>환불계좌</th>
+                <th>환불사유</th>
+                <th>전자서명</th>
+                <th>처리상태</th>
+                <th>관리</th>
+                <th>숨김/보이기</th>
+              </tr>
+            </thead>
+            <tbody id="refundTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 송금관리 섹션 -->
+      <section id="transfer" class="content-section">
+        <h2 class="section-title">송금관리</h2>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>환불신청번호</th>
+                <th>신청일시</th>
+                <th>신청인</th>
+                <th>이메일</th>
+                <th>전화번호</th>
+                <th>승인번호</th>
+                <th>환불신청금액</th>
+                <th>환불계좌</th>
+                <th>처리상태</th>
+                <th>송금</th>
+              </tr>
+            </thead>
+            <tbody id="transferTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 전자서명 섹션 -->
+      <section id="signature" class="content-section">
+        <h2 class="section-title">전자서명 관리</h2>
+        <div class="search-container">
+          <input type="text" id="signatureSearch" placeholder="신용카드승인번호 또는 신청인 이름 입력">
+          <button class="submit-button" onclick="searchSignature()">서명자료 검색</button>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>환불신청번호</th>
+                <th>신청일시</th>
+                <th>신청인</th>
+                <th>승인번호</th>
+                <th>환불신청금액</th>
+                <th>서명미리보기</th>
+                <th>상세보기</th>
+              </tr>
+            </thead>
+            <tbody id="signatureTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 환불대장 섹션 추가 -->
+      <section id="refundLedger" class="content-section">
+        <h2 class="section-title">환불대장</h2>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>환불신청번호</th>
+                <th>신청일시</th>
+                <th>신청인</th>
+                <th>이메일</th>
+                <th>전화번호</th>
+                <th>승인번호</th>
+                <th>환불신청금액</th>
+                <th>환불계좌</th>
+                <th>처리상태</th>
+                <th>송금시간</th>
+              </tr>
+            </thead>
+            <tbody id="refundLedgerTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 문의관리 섹션 -->
+      <section id="inquiry" class="content-section">
+        <h2 class="section-title">문의관리</h2>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>접수번호</th>
+                <th>접수일시</th>
+                <th>문의유형</th>
+                <th>이름</th>
+                <th>이메일</th>
+                <th>문의내용</th>
+                <th>처리상태</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="inquiryTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 비밀번호 변경 모달 -->
+  <div id="passwordModal" class="modal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="hideChangePasswordModal()">&times;</button>
+      <h2 style="margin-bottom: 1.5rem;">비밀번호 변경</h2>
+      <form id="changePasswordForm">
+        <div class="form-group">
+          <label for="currentPassword">현재 비밀번호</label>
+          <input type="password" id="currentPassword" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label for="newPassword">새 비밀번호</label>
+          <input type="password" id="newPassword" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">새 비밀번호 확인</label>
+          <input type="password" id="confirmPassword" class="form-input" required>
+        </div>
+        <button type="submit" class="login-btn">변경하기</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 서명 조회 모달 -->
+  <div id="signatureModal" class="modal">
+    <div class="modal-content">
+      <h3>전자서명 상세정보</h3>
+      <div id="signatureDetails"></div>
+      <div class="modal-buttons">
+        <button onclick="printSignatureDetails()" class="submit-button">인쇄</button>
+        <button onclick="closeSignatureModal()" class="submit-button secondary">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Firebase 초기화
+    const firebaseConfig = {
+      apiKey: "AIzaSyAWrSUmZfofRnofVx5LfCPmPoVtTUuy3A8",
+      authDomain: "coupon-world-370d1.firebaseapp.com",
+      databaseURL: "https://coupon-world-370d1-default-rtdb.firebaseio.com",
+      projectId: "coupon-world-370d1",
+      storageBucket: "coupon-world-370d1.firebasestorage.app",
+      messagingSenderId: "631643024069",
+      appId: "1:631643024069:web:f35111184e686bc980deac",
+      measurementId: "G-1CJ2Z8D8NX"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // 관리자 계정 정보
+    const adminCredentials = {
+      'mainadmin': 'vlfl940325',
+      'stepadmin': 'step1111',
+      'sales': 'sales1111'
+    };
+
+    // 유틸리티 함수
+    const utils = {
+      formatDate(timestamp) {
+        const date = new Date(timestamp);
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+      },
+      getStatusText(status) {
+        return {
+          pending: '대기중',
+          approved: '승인됨',
+          rejected: '반려됨',
+          completed: '환불처리완료',
+          cancelled: '취소'
+        }[status] || '알 수 없음';
+      }
+    };
+
+    // 로그인 처리
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const adminId = document.getElementById('adminId').value;
+      const password = document.getElementById('password').value;
+
+      if (adminCredentials[adminId] === password) {
+        sessionStorage.setItem('adminId', adminId);
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('mainSection').style.display = 'block';
+
+        // 로그인 성공 후 레이아웃 초기화
+        setTimeout(() => {
+          loadSectionData('refund');
+          setupRealtimeUpdates();
+          adjustLayout();
+        }, 100);
+      } else {
+        alert('아이디 또는 비밀번호가 올바르지 않습니다.');
+      }
+    });
+
+    // 데이터 로드 및 테이블 업데이트
+    function updateTable(type, data) {
+      const tableBody = document.getElementById(`${type}TableBody`);
+      if (!tableBody) return;
+
+      if (!data || Object.keys(data).length === 0) {
+        const colSpan = type === 'refund' ? 14 : (type === 'coupon' ? 7 : 6);
+        tableBody.innerHTML = `<tr><td colspan="${colSpan}" class="no-data">데이터가 없습니다.</td></tr>`;
+        return;
+      }
+
+      if (type === 'refund') {
+        const rows = Object.entries(data)
+          .sort((a, b) => new Date(b[1].timestamp) - new Date(a[1].timestamp))
+          .map(([key, item]) => {
+            const bankInfo = item.bankInfo || {};
+            const refundAmount = item.refundAmount || 0;
+            const transferAmount = calculateTransferAmount(refundAmount); // 환불송금액 계산
+            const isHidden = item.isHidden || false;
+
+            const statusClass = item.status === 'cancelled' ? 'cancelled' : item.status;
+            const statusBadge = `<span class="status-badge status-${statusClass}">${getStatusText(item.status)}</span>`;
+
+            const toggleSwitch = `
+              <label class="toggle-switch">
+                <input type="checkbox" ${isHidden ? 'checked' : ''} 
+                  onchange="toggleRowVisibility('${key}', this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            `;
+
+            const reasonText = item.refundReason ?
+              (item.refundReason === 'other' && item.otherReason ?
+                `기타: ${item.otherReason}` :
+                getRefundReasonText(item.refundReason)
+              ) :
+              '미지정';
+
+            const actionButtons = `
+              <div class="action-buttons">
+                <button class="action-btn approve-btn" onclick="updateStatus('${key}', '${type}', 'approved')" ${item.status === 'completed' ? 'disabled' : ''}>승인</button>
+                <button class="action-btn reject-btn" onclick="updateStatus('${key}', '${type}', 'rejected')" ${item.status === 'completed' ? 'disabled' : ''}>반려</button>
+                <button class="action-btn complete-btn" onclick="updateStatus('${key}', '${type}', 'completed')">송금완료</button>
+              </div>
+            `;
+
+            return `
+              <tr data-key="${key}" class="${isHidden ? 'hidden-row' : ''}" data-key="${key}">
+                <td>${item.applicationNumber || '-'}</td>
+                <td>${utils.formatDate(item.timestamp)}</td>
+                <td>${item.userName || ''}</td>
+                <td>${item.userEmail || ''}</td>
+                <td>${item.userPhone || ''}</td>
+                <td>${item.cardApproval || ''}</td>
+                <td class="amount-cell">${refundAmount.toLocaleString()}원</td>
+                <td class="amount-cell">${transferAmount.toLocaleString()}원</td>
+                <td>${getBankNameKorean(bankInfo.bankName || '')} ${(bankInfo.accountNumber || '')} (${bankInfo.accountHolder || ''})</td>
+                <td>${reasonText}</td>
+                <td>${item.signature ? `<img src="${item.signature}" alt="전자서명" class="signature-thumbnail" onclick="showSignatureModal('${item.signature}')" style="max-width: 100px; height: auto;">` : '-'}</td>
+                <td>${statusBadge}</td>
+                <td>${actionButtons}</td>
+                <td>${toggleSwitch}</td>
+              </tr>
+            `;
+          }).join('');
+
+        tableBody.innerHTML = rows;
+      } else {
+        // 다른 타입의 테이블 처리...
+      }
+    }
+
+    // 상태 업데이트 함수
+    async function updateStatus(key, type, newStatus) {
+      const currentAdmin = sessionStorage.getItem('adminId');
+
+      // 한 체크
+      if (currentAdmin !== 'mainadmin' && currentAdmin !== 'admin') {
+        alert('처리 권한이 없습니다.');
+        return;
+      }
+
+      try {
+        await db.ref(`applications/${type}/${key}`).update({
+          status: newStatus,
+          processedAt: new Date().toISOString(),
+          processedBy: currentAdmin
+        });
+
+        const actionText = newStatus === 'pending' ? '초기화' :
+          newStatus === 'approved' ? '승인' :
+            newStatus === 'completed' ? '완료' : '반려';
+
+        const message = newStatus === 'completed' ?
+          '환불이 완료되었습니다.' :
+          `${type === 'coupon' ? '쿠폰' : '환불'} 신청이 ${actionText}되었습니다.`;
+
+        alert(message);
+      } catch (error) {
+        console.error('상태 업데이트 실패:', error);
+        alert('처리 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 섹션 데이터 로드
+    function loadSectionData(type) {
+      if (type === 'signature') {
+        // signature 섹션은 별도의 초기 데이터 로드가 필요 없음
+        return;
+      }
+
+      db.ref(`applications/${type}`).once('value')
+        .then(snapshot => {
+          updateTable(type, snapshot.val());
+        })
+        .catch(error => {
+          console.error('데이터 로드 실패:', error);
+          alert('데이터 로드 중 오류가 발생했습니다.');
+        });
+    }
+
+    // 실시간 업데이트 설정 함수
+    function setupRealtimeUpdates() {
+      const sections = {
+        'refund': 'applications/refund',
+        'coupon': 'applications/coupon',
+        'inquiry': 'applications/inquiry'
+      };
+
+      Object.entries(sections).forEach(([section, path]) => {
+        const ref = db.ref(path);
+        ref.on('value', snapshot => {
+          const activeSection = document.querySelector('.content-section.active');
+          if (activeSection && activeSection.id === section) {
+            if (section === 'inquiry') {
+              updateInquiryTable(snapshot.val());
+            } else {
+              updateTable(section, snapshot.val());
+            }
+          }
+        });
+      });
+    }
+
+    // 로그아웃 처리
+    function logout() {
+      if (confirm('로그아웃 하시겠습니까?')) {
+        sessionStorage.removeItem('adminId');
+        window.location.reload();
+      }
+    }
+
+    // 비밀번호 변경 모달 제어
+    function showChangePasswordModal() {
+      document.getElementById('passwordModal').style.display = 'block';
+    }
+
+    function hideChangePasswordModal() {
+      document.getElementById('passwordModal').style.display = 'none';
+      document.getElementById('changePasswordForm').reset();
+    }
+
+    // 비밀번호 변경 처리
+    document.getElementById('changePasswordForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const adminId = sessionStorage.getItem('adminId');
+
+      if (adminCredentials[adminId] !== currentPassword) {
+        alert('현재 비밀번호가 올바르지 않습니다.');
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        alert('새 비밀번호가 일치하지 않습니다.');
+        return;
+      }
+
+      adminCredentials[adminId] = newPassword;
+      alert('비밀번호가 변경되었습니다.');
+      hideChangePasswordModal();
+    });
+
+    // 메뉴 전환 이벤트 리스너
+    document.querySelectorAll('.menu-btn').forEach(button => {
+      button.addEventListener('click', function () {
+        const sectionId = this.dataset.section;
+
+        document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+
+        document.querySelectorAll('.content-section').forEach(section => {
+          section.classList.remove('active');
+        });
+        document.getElementById(sectionId).classList.add('active');
+
+        // 섹션별 데이터 로드
+        if (sectionId === 'refundLedger') {
+          db.ref('applications/refund').once('value')
+            .then(snapshot => {
+              updateRefundLedgerTable(snapshot.val());
+            });
+        } else if (sectionId === 'transfer') {
+          db.ref('applications/refund').once('value')
+            .then(snapshot => {
+              const data = snapshot.val();
+              const approvedData = {};
+              if (data) {
+                Object.entries(data).forEach(([key, value]) => {
+                  if (value.status === 'approved') {
+                    approvedData[key] = value;
+                  }
+                });
+              }
+              updateTransferTable(approvedData);
+            });
+        } else if (sectionId === 'inquiry') {
+          db.ref('applications/inquiry').once('value')
+            .then(snapshot => {
+              console.log('문의관리 초기 데이터:', snapshot.val()); // 디버깅용
+              updateInquiryTable(snapshot.val());
+            })
+            .catch(error => {
+              console.error('문의관리 데이터 로드 중 오류:', error);
+            });
+        } else {
+          loadSectionData(sectionId);
+        }
+      });
+    });
+
+    // 초기화 함수
+    document.addEventListener('DOMContentLoaded', function () {
+      const adminId = sessionStorage.getItem('adminId');
+      if (adminId) {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('mainSection').style.display = 'block';
+
+        setTimeout(() => {
+          // 환불신청 데이터 로드
+          loadSectionData('refund');
+
+          // 송금관리 데이터 초기 로드
+          db.ref('applications/refund').once('value')
+            .then(snapshot => {
+              const data = snapshot.val();
+              const approvedData = {};
+              if (data) {
+                Object.entries(data).forEach(([key, value]) => {
+                  if (value.status === 'approved') {
+                    approvedData[key] = value;
+                  }
+                });
+              }
+              updateTransferTable(approvedData);
+            });
+
+          setupRealtimeUpdates();
+          adjustLayout();
+        }, 100);
+      } else {
+        document.getElementById('loginSection').style.display = 'flex';
+        document.getElementById('mainSection').style.display = 'none';
+      }
+    });
+
+    // 세션 만료 시간 설정
+    const SESSION_TIMEOUT = 3600000; // 1시간
+    sessionStorage.setItem('loginTime', Date.now());
+
+    // 주기적 세션 체크
+    setInterval(() => {
+      const loginTime = sessionStorage.getItem('loginTime');
+      if (Date.now() - loginTime > SESSION_TIMEOUT) {
+        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+        logout();
+      }
+    }, 60000); // 1분마다 체크
+
+    // 엑셀 내보내기 함수
+    function exportToExcel() {
+      const currentSection = document.querySelector('.content-section.active');
+      const type = currentSection.id;
+      const timestamp = new Date().toISOString().slice(0, 10);
+
+      // 테이블 데이터 가져오기
+      const table = currentSection.querySelector('.data-table');
+      const ws = XLSX.utils.table_to_sheet(table);
+
+      // 열 너비 설정
+      const colWidths = [];
+      table.querySelectorAll('tr:first-child td, tr:first-child th').forEach(() => {
+        colWidths.push({ wch: 15 }); // 기본 열 너비
+      });
+      ws['!cols'] = colWidths;
+
+      // 워크북 생성
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+      // 파일명 설정
+      let fileName = '';
+      switch (type) {
+        case 'coupon':
+          fileName = `쿠폰사용신청_${timestamp}.xlsx`;
+          break;
+        case 'refund':
+          fileName = `환불신청_${timestamp}.xlsx`;
+          break;
+        case 'inquiry':
+          fileName = `문의사항_${timestamp}.xlsx`;
+          break;
+      }
+
+      // 엑셀 파일 저장
+      try {
+        XLSX.writeFile(wb, fileName);
+      } catch (error) {
+        console.error('엑셀 파일 생성 중 오류:', error);
+        alert('엑셀 파일 생성 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 날짜 포맷 함수 (엑셀용)
+    function formatDateForExcel(timestamp) {
+      const date = new Date(timestamp);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    }
+
+    // Firebase 데이터 연동
+    function initializeData() {
+      // 실시간 데이터베이스 참조
+      const refundRef = firebase.database().ref('applications/refund');
+      const couponRef = firebase.database().ref('applications/coupon');
+      const inquiryRef = firebase.database().ref('applications/inquiry');
+
+      // 환불신청 데이터 감시
+      refundRef.on('value', (snapshot) => {
+        console.log('환불신청 데이터:', snapshot.val());
+        updateTable('refund', snapshot.val());
+      }, (error) => {
+        console.error('환불신청 데이터 로드 중 오류:', error);
+      });
+
+      // 쿠폰사용신청 데이터 감시
+      couponRef.on('value', (snapshot) => {
+        updateTable('coupon', snapshot.val());
+      }, (error) => {
+        console.error('쿠폰사용신청 데이터 로드 중 오류:', error);
+      });
+
+      // 문의사항 데이터 감시
+      inquiryRef.on('value', (snapshot) => {
+        console.log('문의사항 데이터:', snapshot.val());
+        updateInquiryTable(snapshot.val());
+      }, (error) => {
+        console.error('문의사항 데이터 로드 중 오류:', error);
+      });
+    }
+
+    // 유틸리티 함수들
+    function getStatusText(status) {
+      return {
+        'pending': '신청접수',
+        'approved': '승인',
+        'rejected': '반려',
+        'completed': '송금완료',
+        'cancelled': '취소'
+      }[status] || status;
+    }
+
+    function formatDate(timestamp) {
+      if (!timestamp) return '';
+      const date = new Date(timestamp);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    }
+
+    // 페이지 로드 시 초기화
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeData();
+    });
+
+    // 환불금액 요약 업데이트 함수
+    function updateRefundSummary() {
+      const selectedDate = document.getElementById('refundDate').value;
+
+      // 오늘 날짜 한국 시간 기준으로 설정
+      const now = new Date();
+      const kstNow = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+      const today = kstNow.toISOString().split('T')[0];
+
+      db.ref('applications/refund').once('value')
+        .then(snapshot => {
+          const refundData = snapshot.val() || {};
+          let selectedDateTotal = 0;
+          let todayTotal = 0;
+
+          Object.values(refundData).forEach(item => {
+            // 타임스탬프를 한국 시간으로 변환
+            const itemDate = new Date(item.timestamp);
+            const kstDate = new Date(itemDate.getTime() + (9 * 60 * 60 * 1000));
+            const itemDateStr = kstDate.toISOString().split('T')[0];
+
+            const amount = parseInt(item.refundAmount) || 0;
+
+            // 취소 상태가 아닌 신청건만 합계에 포함
+            if (item.status !== 'cancelled') {
+              // 선택된 날짜의 합계 계산
+              if (itemDateStr === selectedDate) {
+                selectedDateTotal += amount;
+              }
+
+              // 오늘 날짜의 합계 계산 (한국 시간 기준)
+              if (itemDateStr === today) {
+                todayTotal += amount;
+              }
+            }
+          });
+
+          // 결과 표시
+          document.getElementById('selectedDateTotal').textContent =
+            selectedDateTotal.toLocaleString() + '원';
+          document.getElementById('todayTotal').textContent =
+            todayTotal.toLocaleString() + '원';
+        });
+    }
+
+    // 실시간 데이터 업데이트를 위한 리스너 추가
+    function initializeData() {
+      const refundRef = firebase.database().ref('applications/refund');
+
+      refundRef.on('value', (snapshot) => {
+        updateRefundSummary();
+      });
+    }
+
+    // 데이터 삭제 함수
+    async function deleteData(key, type) {
+      // mainadmin 권한 체크
+      if (sessionStorage.getItem('adminId') !== 'mainadmin') {
+        alert('삭제 권한이 없습니다.');
+        return;
+      }
+
+      // 삭제 확인
+      const confirmMessage = {
+        'coupon': '쿠폰사용신청',
+        'refund': '환불신청',
+        'inquiry': '문의사항'
+      };
+
+      if (!confirm(`선택한 ${confirmMessage[type]} 데이터를 삭제하시겠습니까?\n삭제 데이터는 복구할 수 없습니다.`)) {
+        return;
+      }
+
+      try {
+        // Firebase에서 데이터 삭제
+        await db.ref(`applications/${type}/${key}`).remove();
+
+        // 삭제 로그 기록 (선택사항)
+        await db.ref('deleteLogs').push({
+          type: type,
+          dataKey: key,
+          deletedBy: sessionStorage.getItem('adminId'),
+          deletedAt: new Date().toISOString()
+        });
+
+        alert('데이터가 삭제되었습니다.');
+
+        // 환불신청 데이터인 경우 요약 정보 업데이트
+        if (type === 'refund') {
+          updateRefundSummary();
+        }
+      } catch (error) {
+        console.error('데이터 삭제 중 오류:', error);
+        alert('데이터 삭제 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 화면 크기 변경 시 레이아웃 조정 함수
+    function adjustLayout() {
+      const header = document.querySelector('.dashboard-header');
+      const content = document.querySelector('.dashboard-content');
+      if (header && content) {
+        const headerHeight = header.offsetHeight;
+        content.style.marginTop = `${headerHeight}px`;
+        content.style.height = `calc(100vh - ${headerHeight}px)`;
+      }
+    }
+
+    // 이벤트 리스너 설정
+    document.addEventListener('DOMContentLoaded', function () {
+      adjustLayout(); // 초기 로드 시 실행
+
+      // 데이터 로드 후에도 레이아웃 조정
+      ['coupon', 'refund', 'inquiry'].forEach(type => {
+        db.ref(`applications/${type}`).on('value', () => {
+          setTimeout(adjustLayout, 100); // 데이터 렌더링 후 레이아웃 조정
+        });
+      });
+    });
+
+    // 화면 크기 변경 시 레이아웃 조정
+    window.addEventListener('resize', adjustLayout);
+
+    // 메뉴 전환 시 레이아웃 조정
+    document.querySelectorAll('.menu-btn').forEach(button => {
+      button.addEventListener('click', function () {
+        setTimeout(adjustLayout, 100); // 메뉴 전환 후 레이아웃 조정
+      });
+    });
+
+    // 행 숨김/보이기 토글 함수
+    async function toggleRowVisibility(key, isHidden) {
+      try {
+        await db.ref(`applications/refund/${key}`).update({
+          isHidden: isHidden
+        });
+
+        const row = document.querySelector(`tr[data-key="${key}"]`);
+        if (row) {
+          if (isHidden) {
+            row.classList.add('hidden-row');
+          } else {
+            row.classList.remove('hidden-row');
+          }
+        }
+      } catch (error) {
+        console.error('상태 업데이트 중 오류:', error);
+        alert('처리 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 전자서명 검색 함수
+    async function searchSignature() {
+      const searchValue = document.getElementById('signatureSearch').value.trim();
+      if (!searchValue) {
+        alert('검색어를 입력해주세요.');
+        return;
+      }
+
+      try {
+        const refundRef = db.ref('applications/refund');
+        const snapshot = await refundRef.once('value');
+        const results = [];
+
+        snapshot.forEach(child => {
+          const data = child.val();
+          if (!data) return;
+
+          if (data.cardApproval === searchValue || data.userName === searchValue) {
+            if (data.signature) {
+              results.push({
+                key: child.key,
+                ...data
+              });
+            }
+          }
+        });
+
+        updateSignatureTable(results);
+      } catch (error) {
+        console.error('서명 검색 중 오류:', error);
+        alert('검색 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 서명 테이블 업데이트 함수
+    function updateSignatureTable(results) {
+      const tableBody = document.getElementById('signatureTableBody');
+      
+      if (!results || results.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="7" class="no-data">검색 결과가 없습니다.</td></tr>';
+        return;
+      }
+
+      const rows = results.map(data => `
+        <tr>
+          <td>${data.applicationNumber || '-'}</td>
+          <td>${utils.formatDate(data.timestamp)}</td>
+          <td>${data.userName || '-'}</td>
+          <td>${data.cardApproval || '-'}</td>
+          <td class="amount-cell">${(data.refundAmount || 0).toLocaleString()}원</td>
+          <td>
+            <img src="${data.signature}" alt="서명" class="signature-thumbnail" 
+              onclick="showSignatureDetail('${data.key}')" style="max-width: 100px; cursor: pointer;">
+          </td>
+          <td>
+            <button class="action-btn" onclick="showSignatureDetail('${data.key}')">상세보기</button>
+          </td>
+        </tr>
+      `).join('');
+
+      tableBody.innerHTML = rows;
+    }
+
+    // 서명 상세 정보 표시 함수
+    async function showSignatureDetail(key) {
+      try {
+        const snapshot = await db.ref(`applications/refund/${key}`).once('value');
+        const data = snapshot.val();
+        
+        if (!data) {
+          alert('데이터를 찾을 수 없습니다.');
+          return;
+        }
+
+        const modal = document.getElementById('signatureModal');
+        const details = document.getElementById('signatureDetails');
+
+        details.innerHTML = `
+          <div class="signature-detail-content">
+            <div class="detail-info">
+              <p><strong>환불신청번호:</strong> ${data.applicationNumber || '-'}</p>
+              <p><strong>신청일시:</strong> ${utils.formatDate(data.timestamp)}</p>
+              <p><strong>신청인:</strong> ${data.userName || '-'}</p>
+              <p><strong>이메일:</strong> ${data.userEmail || '-'}</p>
+              <p><strong>전화번호:</strong> ${data.userPhone || '-'}</p>
+              <p><strong>승인번호:</strong> ${data.cardApproval || '-'}</p>
+              <p><strong>환불금액:</strong> ${(data.refundAmount || 0).toLocaleString()}원</p>
+              <p><strong>환불계좌:</strong> ${data.bankInfo ? `${getBankNameKorean(data.bankInfo.bankName)} ${data.bankInfo.accountNumber}` : '-'}</p>
+            </div>
+            <div class="signature-image-container">
+              <h4>전자서명</h4>
+              <img src="${data.signature}" alt="전자서명" class="signature-full-image">
+            </div>
+          </div>
+        `;
+
+        modal.style.display = 'flex';
+      } catch (error) {
+        console.error('상세 정보 로드 중 오류:', error);
+        alert('데이터 로드 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 서명 데이터 인쇄
+    function printSignatureDetails() {
+      const printWindow = window.open('', '', 'width=800,height=600');
+      const content = document.getElementById('signatureDetails').innerHTML;
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>전자서명 상세정보</title>
+            <style>
+              body { padding: 20px; }
+              .signature-detail-item { margin-bottom: 20px; }
+              .signature-image { max-width: 100%; }
+            </style>
+          </head>
+          <body>
+            <h2>전자서명 상세정보</h2>
+            ${content}
+          </body>
+        </html>
+      `);
+
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }
+
+    // 서명 모달 닫기 함수
+    function closeSignatureModal() {
+      const modal = document.getElementById('signatureModal');
+      modal.style.display = 'none';
+    }
+
+    // 모달 외부 클릭 시 닫기
+    window.onclick = function (event) {
+      const modal = document.getElementById('signatureModal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    // 은행명 매핑 함수
+    function getBankNameKorean(engName) {
+      const bankNames = {
+        'kb': '국민은행',
+        'shinhan': '신한은행',
+        'woori': '우리은행',
+        'keb': '하나은행',
+        'hana': '하나은행',
+        'ibk': '기업은행',
+        'nh': '농협은행',
+        'nonghyup': '농협은행',
+        'sc': 'SC제일은행',
+        'city': '씨티은행',
+        'dgb': '대구은행',
+        'bnk': '부산은행',
+        'kjb': '광주은행',
+        'kwangju': '광주은행',
+        'jbb': '전북은행',
+        'jeju': '제주은행',
+        'post': '우체국',
+        'k': '케이뱅크',
+        'kakao': '카카오뱅크',
+        'toss': '토스뱅크',
+        'sh': '신한은행',
+        'standard': 'SC제일은행',
+        'kn': '경남은행',
+        'knb': '경남은행',
+        'kj': '광주은행'
+      };
+      return bankNames[engName.toLowerCase()] || engName;
+    }
+
+    // 환불송금액 계산 함수 추가
+    function calculateTransferAmount(refundAmount) {
+      const fee = Math.floor(refundAmount * 0.099); // 9.9% 수수료
+      const bankFee = 300; // 송금수수료
+      const transferAmount = refundAmount - fee - bankFee;
+      return Math.max(0, transferAmount); // 음수가 되지 않도록 보장
+    }
+
+    // 송금관리 테이블 업데이트 함수 수정
+    function updateTransferTable(data) {
+      const tableBody = document.getElementById('transferTableBody');
+      if (!tableBody) return;
+
+      if (!data || Object.keys(data).length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="11" class="no-data">데이터가 없습니다.</td></tr>';
+        return;
+      }
+
+      const rows = Object.entries(data)
+        .filter(([_, item]) => item.status === 'approved' || item.status === 'transfer')
+        .sort((a, b) => new Date(b[1].timestamp) - new Date(a[1].timestamp))
+        .map(([key, item]) => {
+          const refundAmount = item.refundAmount || 0;
+          const transferAmount = calculateTransferAmount(refundAmount);
+          const statusBadge = `<span class="status-badge status-${item.status}">${item.status === 'transfer' ? '송금처리' : utils.getStatusText(item.status)}</span>`;
+
+          return `
+            <tr>
+              <td>${item.applicationNumber || '-'}</td>
+              <td>${utils.formatDate(item.timestamp)}</td>
+              <td>${item.userName || ''}</td>
+              <td>${item.userEmail || ''}</td>
+              <td>${item.userPhone || ''}</td>
+              <td>${item.cardApproval || ''}</td>
+              <td class="amount-cell">${refundAmount.toLocaleString()}원</td>
+              <td class="amount-cell">${transferAmount.toLocaleString()}원</td>
+              <td>${getBankNameKorean(item.bankInfo?.bankName || '')} ${(item.bankInfo?.accountNumber || '')} (${item.bankInfo?.accountHolder || ''})</td>
+              <td>${statusBadge}</td>
+              <td>
+                ${item.status === 'approved' ?
+                `<button class="action-btn transfer-btn" onclick="processTransfer('${key}')">송금</button>` :
+                utils.formatDate(item.transferredAt)}
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+      tableBody.innerHTML = rows;
+    }
+
+    // 송금 처리 함수
+    async function processTransfer(key) {
+      try {
+        const transferredAt = new Date().toISOString();
+        const refRef = db.ref(`applications/refund/${key}`);
+
+        // 현재 데이터 가져오기
+        const snapshot = await refRef.once('value');
+        const data = snapshot.val();
+
+        if (!data) {
+          throw new Error('데이터를 찾을 수 없습니다.');
+        }
+
+        // SMS 발송
+        await sendSMS(data.userPhone, `귀하의 환불신청계좌로 환불금액을 입금합니다.`);
+
+        // 상태 업데이트
+        await refRef.update({
+          status: 'completed', // 송금완료 상태로 변경
+          transferredAt: transferredAt
+        });
+
+        alert('송금처리가 완료되었습니다.');
+      } catch (error) {
+        console.error('송금처리 중 오류:', error);
+        alert('송금처리 중 오류가 발생했습니다.');
+      }
+    }
+
+    // SMS 발송 함수 (실제 SMS 발송 서비스와 연동 필요)
+    async function sendSMS(phone, message) {
+      console.log(`SMS sent to ${phone}: ${message}`);
+    }
+
+    // 환불대장 테이블 업데이트 함수
+    function updateRefundLedgerTable(data) {
+      const tableBody = document.getElementById('refundLedgerTableBody');
+      if (!tableBody) return;
+
+      if (!data || Object.keys(data).length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="10" class="no-data">데이터가 없습니다.</td></tr>';
+        return;
+      }
+
+      const rows = Object.entries(data)
+        .filter(([_, item]) => item.status === 'completed' && item.transferredAt) // 송금완료 상태이고 송금시간이 있는 데이터만 필터링
+        .sort((a, b) => new Date(b[1].transferredAt) - new Date(a[1].transferredAt)) // 송금시간 기준으로 정렬
+        .map(([key, item]) => {
+          const statusBadge = `<span class="status-badge status-${item.status}">${utils.getStatusText(item.status)}</span>`;
+
+          return `
+            <tr>
+              <td>${item.applicationNumber || '-'}</td>
+              <td>${utils.formatDate(item.timestamp)}</td>
+              <td>${item.userName || ''}</td>
+              <td>${item.userEmail || ''}</td>
+              <td>${item.userPhone || ''}</td>
+              <td>${item.cardApproval || ''}</td>
+              <td class="amount-cell">${(item.refundAmount || 0).toLocaleString()}원</td>
+              <td>${getBankNameKorean(item.bankInfo?.bankName || '')} ${(item.bankInfo?.accountNumber || '')} (${item.bankInfo?.accountHolder || ''})</td>
+              <td>${statusBadge}</td>
+              <td>${utils.formatDate(item.transferredAt)}</td>
+            </tr>
+          `;
+        }).join('');
+
+      tableBody.innerHTML = rows;
+    }
+
+    // 환불사유 텍스트 변환 함수
+    function getRefundReasonText(reason) {
+      const reasons = {
+        'change_mind': '단순변심',
+        'dissatisfaction': '서비스불만',
+        'other': '기타'
+      };
+      return reasons[reason] || '미지정';
+    }
+
+    // 문의 테이블 업데이트 함수 수정
+    function updateInquiryTable(data) {
+      console.log('문의관리 데이터 업데이트:', data);
+      const tableBody = document.getElementById('inquiryTableBody');
+      if (!tableBody) {
+        console.error('inquiryTableBody를 찾을 수 없습니다.');
+        return;
+      }
+
+      if (!data || Object.keys(data).length === 0) {
+        console.log('문의 데이터가 없습니다.');
+        tableBody.innerHTML = '<tr><td colspan="8" class="no-data">데이터가 없습니다.</td></tr>';
+        return;
+      }
+
+      const rows = Object.entries(data)
+        .sort((a, b) => new Date(b[1].timestamp) - new Date(a[1].timestamp))
+        .map(([key, item]) => {
+          const inquiryTypes = {
+            'refund': '환불',
+            'couponmall': '쿠폰몰',
+            'other': '기타'
+          };
+
+          // 문의관리용 상태 텍스트 매핑
+          const inquiryStatus = {
+            'pending': '접수완료',
+            'completed': '처리완료',
+            'rejected': '반려'
+          };
+
+          const statusBadge = `<span class="status-badge status-${item.status}">${inquiryStatus[item.status] || '접수완료'}</span>`;
+          
+          const actionButtons = `
+            <div class="action-buttons">
+              <button class="action-btn approve-btn" onclick="updateInquiryStatus('${key}', 'completed')" ${item.status === 'completed' ? 'disabled' : ''}>처리완료</button>
+              <button class="action-btn reject-btn" onclick="updateInquiryStatus('${key}', 'rejected')" ${item.status === 'completed' ? 'disabled' : ''}>반려</button>
+            </div>
+          `;
+
+          return `
+            <tr>
+              <td>${key.slice(-8)}</td>
+              <td>${utils.formatDate(item.timestamp)}</td>
+              <td>${inquiryTypes[item.inquiryType] || item.inquiryType}</td>
+              <td>${item.userName || ''}</td>
+              <td>${item.userEmail || ''}</td>
+              <td class="inquiry-content">${item.content || ''}</td>
+              <td>${statusBadge}</td>
+              <td>${actionButtons}</td>
+            </tr>
+          `;
+        }).join('');
+
+      tableBody.innerHTML = rows;
+    }
+
+    // 문의 상태 업데이트 함수
+    async function updateInquiryStatus(key, newStatus) {
+      const currentAdmin = sessionStorage.getItem('adminId');
+
+      if (currentAdmin !== 'mainadmin' && currentAdmin !== 'admin') {
+        alert('처리 권한이 없습니다.');
+        return;
+      }
+
+      try {
+        await db.ref(`applications/inquiry/${key}`).update({
+          status: newStatus,
+          processedAt: new Date().toISOString(),
+          processedBy: currentAdmin
+        });
+
+        alert('처리상태가 업데이트되었습니다.');
+      } catch (error) {
+        console.error('상태 업데이트 실패:', error);
+        alert('처리 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 이벤트 리스너 설정
+    document.addEventListener('DOMContentLoaded', () => {
+      setupRealtimeUpdates();
+    });
+  </script>
+</body>
+
+</html>
